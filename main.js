@@ -2,7 +2,7 @@
 
 // Game constants
 const BOARD_LENGTH = 20
-const FOX_TICK = 500 // ms
+const FOX_TICK = 300 // ms
 
 // Moves
 const MOVE_DOWN = [1, 0]
@@ -52,9 +52,11 @@ Actor.prototype.move = function(moveVector) {
 
 // Game model singleton
 const GameBoard = {
-  grid: Array(BOARD_LENGTH).fill(0).map(row => 
-    Array(BOARD_LENGTH).fill(0).map(col => Math.random() > 0.2 ? EMPTY : WALL)
-  ),
+  init: function() {
+    this.grid = Array(BOARD_LENGTH).fill(0).map(row => 
+      Array(BOARD_LENGTH).fill(0).map(col => Math.random() > 0.2 ? EMPTY : WALL)
+    )
+  },
   set:  function(actor) {
     this.grid[actor.row][actor.col] = actor.sprite
   },
@@ -179,7 +181,12 @@ function onFoxTick() {
 
   // Fox catches the player
   if (Actor.collided(fox, player)) {
-    // do nothing for now
+    // re initialise
+    GameBoard.init()
+    player = Actor.start(PLAYER)
+    fox = Actor.start(FOX)
+    GameBoard.set(player)
+    GameBoard.set(fox)
   }  
   View.render()
 }
@@ -187,11 +194,12 @@ function onFoxTick() {
 
 
 // Initialise game
+GameBoard.init()
 let player = Actor.start(PLAYER)
 let fox = Actor.start(FOX)
 GameBoard.set(player)
 GameBoard.set(fox)
+View.render()
 window.addEventListener('resize', View.render, false);
 document.addEventListener('keydown', onKeyDown)
-View.render()
 setInterval(onFoxTick, FOX_TICK)  // Start the hunt!
