@@ -114,7 +114,7 @@ function onKeyDown(event) {
 
 
 function onFoxTick() {
- 
+  // Use A* pathing algo to find a short path to the player
   const getDistance = (a ,b) =>
     Math.abs(a.row - b.row) + Math.abs(a.col - b.col)
 
@@ -134,7 +134,7 @@ function onFoxTick() {
   }
 
 
- let possible = []
+  let possible = []
   let seen = []
 
   const startSquare = {
