@@ -135,7 +135,6 @@ function onFoxTick() {
     }))
   }
 
-
   let possible = []
   let seen = []
 
@@ -166,13 +165,7 @@ function onFoxTick() {
     currentSquare = seen
       .filter(sq => getDistance(sq, currentSquare) === 1)
       .reduce((prev, current) => (prev.steps < current.steps) ? prev : current)
-    count++
-    if (count > 500) {
-      console.error("TOO MANY ITERATIONS!")
-      break
-    }
   }
-
 
   GameBoard.remove(fox)
   fox.row = currentSquare.row
