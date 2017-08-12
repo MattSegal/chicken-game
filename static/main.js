@@ -42,217 +42,428 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _constants = __webpack_require__(2);
+
+	var _constants2 = _interopRequireDefault(_constants);
+
+	var _actor = __webpack_require__(1);
+
+	var _actor2 = _interopRequireDefault(_actor);
+
+	var _gameboard = __webpack_require__(3);
+
+	var _gameboard2 = _interopRequireDefault(_gameboard);
+
+	var _view = __webpack_require__(4);
+
+	var _view2 = _interopRequireDefault(_view);
+
+	var _events = __webpack_require__(5);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	// Initialise game board and view
+	var gameboard = new _gameboard2.default();
+	var player = new _actor2.default(_constants2.default.PLAYER, gameboard);
+	var fox = new _actor2.default(_constants2.default.FOX, gameboard);
+	var view = new _view2.default(gameboard);
+	var foxLoop = new _events.FoxLoop(gameboard, fox, player, view);
+	view.render();
+
+	// Hook up events
+	window.addEventListener('resize', view.render, false);
+	document.addEventListener('keydown', (0, _events.onKeyDown)(player, view));
+	setInterval(function () {
+	  return foxLoop.run();
+	}, _constants2.default.FOX_TICK); // Start the hunt!
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _constants = __webpack_require__(2);
+
+	var _constants2 = _interopRequireDefault(_constants);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	// Represents the player/fox on the game board
+	var Actor = function () {
+	  function Actor(sprite, gameboard) {
+	    _classCallCheck(this, Actor);
+
+	    this.sprite = sprite;
+	    this.gameboard = gameboard;
+	    this.reset();
+	  }
+
+	  _createClass(Actor, [{
+	    key: 'reset',
+	    value: function reset() {
+	      this.row = Math.floor(Math.random() * _constants2.default.BOARD_LENGTH);
+	      this.col = Math.floor(Math.random() * _constants2.default.BOARD_LENGTH);
+	      this.gameboard.set(this);
+	    }
+	  }, {
+	    key: 'collided',
+	    value: function collided(actor) {
+	      return this.row === actor.row && this.col === actor.col;
+	    }
+	  }, {
+	    key: 'move',
+	    value: function move(moveVector) {
+	      this.gameboard.remove(this);
+	      this.row += moveVector[0];
+	      this.col += moveVector[1];
+	      this.gameboard.set(this);
+	    }
+	  }, {
+	    key: 'canMove',
+	    value: function canMove(moveVector) {
+	      return this.gameboard.isValidMove(this, moveVector);
+	    }
+	  }]);
+
+	  return Actor;
+	}();
+
+	exports.default = Actor;
+
+/***/ }),
+/* 2 */
 /***/ (function(module, exports) {
 
 	'use strict';
 
-	// Game constants
-
-	var BOARD_LENGTH = 20;
-	var FOX_TICK = 300; // ms
-
-	// Moves
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
 	var MOVE_DOWN = [1, 0];
 	var MOVE_UP = [-1, 0];
 	var MOVE_LEFT = [0, -1];
 	var MOVE_RIGHT = [0, 1];
-	var MOVES = {
-	  ArrowDown: MOVE_DOWN,
-	  ArrowUp: MOVE_UP,
-	  ArrowLeft: MOVE_LEFT,
-	  ArrowRight: MOVE_RIGHT,
-	  s: MOVE_DOWN,
-	  w: MOVE_UP,
-	  a: MOVE_LEFT,
-	  d: MOVE_RIGHT
+
+	exports.default = {
+	  // Game constants
+	  BOARD_LENGTH: 20, // px
+	  FOX_TICK: 300, // ms
+
+	  // Moves
+	  MOVES: {
+	    ArrowDown: MOVE_DOWN,
+	    ArrowUp: MOVE_UP,
+	    ArrowLeft: MOVE_LEFT,
+	    ArrowRight: MOVE_RIGHT,
+	    s: MOVE_DOWN,
+	    w: MOVE_UP,
+	    a: MOVE_LEFT,
+	    d: MOVE_RIGHT
+	  },
 
 	  // Sprites
-	};var EMPTY = ' ';
-	var PLAYER = '🐓';
-	var FOX = '🦊';
-	var WALL = '🌲';
-
-	// Utils
-	var merge = function merge(a, b) {
-	  return Object.assign({}, a, b);
+	  EMPTY: ' ',
+	  PLAYER: '🐓',
+	  FOX: '🦊',
+	  WALL: '🌲'
 	};
 
-	// Represents the player/fox on the game board
-	function Actor(row, col, sprite) {
-	  this.row = row;
-	  this.col = col;
-	  this.sprite = sprite;
-	}
-	Actor.start = function (sprite) {
-	  var randRow = Math.floor(Math.random() * BOARD_LENGTH);
-	  var randCol = Math.floor(Math.random() * BOARD_LENGTH);
-	  return new Actor(randRow, randCol, sprite);
-	};
-	Actor.collided = function (actor1, actor2) {
-	  return actor1.row === actor2.row && actor1.col === actor2.col;
-	};
-	Actor.prototype.move = function (moveVector) {
-	  this.row += moveVector[0];
-	  this.col += moveVector[1];
-	};
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _constants = __webpack_require__(2);
+
+	var _constants2 = _interopRequireDefault(_constants);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	// Game model singleton
-	var GameBoard = {
-	  init: function init() {
-	    this.grid = Array(BOARD_LENGTH).fill(0).map(function (row) {
-	      return Array(BOARD_LENGTH).fill(0).map(function (col) {
-	        return Math.random() > 0.2 ? EMPTY : WALL;
-	      });
-	    });
-	  },
-	  set: function set(actor) {
-	    this.grid[actor.row][actor.col] = actor.sprite;
-	  },
-	  remove: function remove(actor) {
-	    this.grid[actor.row][actor.col] = EMPTY;
-	  },
-	  isInvalidMove: function isInvalidMove(position, move) {
-	    var newRow = position.row + move[0];
-	    var newCol = position.col + move[1];
-	    return this.isInvalidPosition(newRow, newCol);
-	  },
-	  isInvalidPosition: function isInvalidPosition(row, col) {
-	    return row == -1 || row == BOARD_LENGTH || // vertical edge
-	    col == -1 || col == BOARD_LENGTH || // horizontal edge
-	    this.grid[row][col] === WALL // wall collision
-	    ;
+	var GameBoard = function () {
+	  function GameBoard() {
+	    _classCallCheck(this, GameBoard);
+
+	    this.reset();
 	  }
 
-	  // View singleton
-	};var View = {
-	  dom: document.getElementById('gameboard'),
-	  render: function render() {
-	    var _this = this;
-
-	    // Render GameBoard to the DOM
-	    this.height = Math.ceil(window.innerHeight / BOARD_LENGTH);
-	    this.width = Math.ceil(window.innerWidth / BOARD_LENGTH);
-	    this.dom.innerHTML = GameBoard.grid.map(function (row) {
-	      return _this.buildRow(row);
-	    }).reduce(function (acc, val) {
-	      return acc + val;
-	    }, '');
-	  },
-	  buildRow: function buildRow(row) {
-	    var _this2 = this;
-
-	    var content = row.map(function (col) {
-	      return _this2.buildCol(col);
-	    }).reduce(function (acc, val) {
-	      return acc + val;
-	    }, '');
-	    return '<div class="row" style="height:' + this.height + 'px;">' + content + '</div>';
-	  },
-	  buildCol: function buildCol(content) {
-	    return '<div class="col" style="width:' + this.width + 'px;">' + content + '</div>';
-	  }
-
-	  // Event handlers
-	};function onKeyDown(event) {
-	  var moveVector = MOVES[event.key];
-	  if (!moveVector || GameBoard.isInvalidMove(player, moveVector)) {
-	    return;
-	  }
-	  event.preventDefault(); // Avoid double handling
-	  GameBoard.remove(player);
-	  player.move(moveVector);
-	  GameBoard.set(player);
-	  View.render();
-	}
-
-	function onFoxTick() {
-	  // Use A* pathing algo to find a short path to the player
-	  var getDistance = function getDistance(a, b) {
-	    return Math.abs(a.row - b.row) + Math.abs(a.col - b.col);
-	  };
-
-	  var getNextSquares = function getNextSquares(sq, seen) {
-	    return [merge(sq, { row: sq.row + 1 }), merge(sq, { row: sq.row - 1 }), merge(sq, { col: sq.col + 1 }), merge(sq, { col: sq.col - 1 })].filter(function (square) {
-	      return !seen.some(function (seenSq) {
-	        return seenSq.row === square.row && seenSq.col === square.col;
+	  _createClass(GameBoard, [{
+	    key: 'reset',
+	    value: function reset() {
+	      this.grid = Array(_constants2.default.BOARD_LENGTH).fill(0).map(function (row) {
+	        return Array(_constants2.default.BOARD_LENGTH).fill(0).map(function (col) {
+	          return Math.random() > 0.2 ? _constants2.default.EMPTY : _constants2.default.WALL;
+	        });
 	      });
-	    }).filter(function (square) {
-	      return !GameBoard.isInvalidPosition(sq.row, sq.col);
-	    }).map(function (square) {
-	      return merge(square, {
-	        steps: square.steps + 1,
-	        score: square.steps + 1 + getDistance(square, player)
-	      });
-	    });
-	  };
-
-	  var possible = [];
-	  var seen = [];
-
-	  var startSquare = {
-	    row: fox.row, col: fox.col,
-	    score: getDistance(fox, player),
-	    steps: 0
-	  };
-	  var currentSquare = startSquare;
-
-	  var count = 0;
-
-	  // Search for shortest path
-	  while (currentSquare.row !== player.row || currentSquare.col !== player.col) {
-	    seen.push(currentSquare);
-	    possible = possible.filter(function (sq) {
-	      return sq !== currentSquare;
-	    });
-	    var nextSquares = getNextSquares(currentSquare, seen);
-	    nextSquares.forEach(function (sq) {
-	      return possible.push(sq);
-	    });
-	    currentSquare = possible.reduce(function (prev, current) {
-	      return prev.score < current.score ? prev : current;
-	    });
-	    count++;
-	    if (count > 500) {
-	      console.error("TOO MANY ITERATIONS!");
-	      break;
 	    }
-	  }
-	  // Backtrack to find the next move
-	  while (currentSquare.steps > 1) {
-	    currentSquare = seen.filter(function (sq) {
-	      return getDistance(sq, currentSquare) === 1;
-	    }).reduce(function (prev, current) {
-	      return prev.steps < current.steps ? prev : current;
-	    });
+	  }, {
+	    key: 'set',
+	    value: function set(actor) {
+	      this.grid[actor.row][actor.col] = actor.sprite;
+	    }
+	  }, {
+	    key: 'remove',
+	    value: function remove(actor) {
+	      this.grid[actor.row][actor.col] = _constants2.default.EMPTY;
+	    }
+	  }, {
+	    key: 'isValidMove',
+	    value: function isValidMove(actor, move) {
+	      var newRow = actor.row + move[0];
+	      var newCol = actor.col + move[1];
+	      return this.isValidPosition(newRow, newCol);
+	    }
+	  }, {
+	    key: 'isValidPosition',
+	    value: function isValidPosition(row, col) {
+	      return !(row === -1 || row === _constants2.default.BOARD_LENGTH || // vertical edge
+	      col === -1 || col === _constants2.default.BOARD_LENGTH || // horizontal edge
+	      this.grid[row][col] === _constants2.default.WALL // wall collision
+	      );
+	    }
+	  }]);
+
+	  return GameBoard;
+	}();
+
+	exports.default = GameBoard;
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _constants = __webpack_require__(2);
+
+	var _constants2 = _interopRequireDefault(_constants);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	// View singleton
+	var View = function () {
+	  function View(gameboard) {
+	    _classCallCheck(this, View);
+
+	    this.gameboard = gameboard;
+	    this.dom = document.getElementById('gameboard');
 	  }
 
-	  GameBoard.remove(fox);
-	  fox.row = currentSquare.row;
-	  fox.col = currentSquare.col;
-	  GameBoard.set(fox);
+	  _createClass(View, [{
+	    key: 'render',
+	    value: function render() {
+	      var _this = this;
 
-	  // Fox catches the player
-	  if (Actor.collided(fox, player)) {
-	    // re initialise
-	    GameBoard.init();
-	    player = Actor.start(PLAYER);
-	    fox = Actor.start(FOX);
-	    GameBoard.set(player);
-	    GameBoard.set(fox);
+	      // Render GameBoard to the DOM
+	      this.height = Math.ceil(window.innerHeight / _constants2.default.BOARD_LENGTH);
+	      this.width = Math.ceil(window.innerWidth / _constants2.default.BOARD_LENGTH);
+	      this.dom.innerHTML = this.gameboard.grid.map(function (row) {
+	        return _this.buildRow(row);
+	      }).reduce(function (acc, val) {
+	        return acc + val;
+	      }, '');
+	    }
+	  }, {
+	    key: 'buildRow',
+	    value: function buildRow(row) {
+	      var _this2 = this;
+
+	      var content = row.map(function (col) {
+	        return _this2.buildCol(col);
+	      }).reduce(function (acc, val) {
+	        return acc + val;
+	      }, '');
+	      return '<div class="row" style="height:' + this.height + 'px;">' + content + '</div>';
+	    }
+	  }, {
+	    key: 'buildCol',
+	    value: function buildCol(content) {
+	      return '<div class="col" style="width:' + this.width + 'px;">' + content + '</div>';
+	    }
+	  }]);
+
+	  return View;
+	}();
+
+	exports.default = View;
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.FoxLoop = exports.onKeyDown = undefined;
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _constants = __webpack_require__(2);
+
+	var _constants2 = _interopRequireDefault(_constants);
+
+	var _actor = __webpack_require__(1);
+
+	var _actor2 = _interopRequireDefault(_actor);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	// Player key press
+	var onKeyDown = exports.onKeyDown = function onKeyDown(player, view) {
+	  return function (event) {
+	    event.preventDefault(); // Avoid double handling
+	    var moveVector = _constants2.default.MOVES[event.key];
+	    if (moveVector && player.canMove(moveVector)) {
+	      player.move(moveVector);
+	      view.render();
+	    }
+	  };
+	};
+
+	// Event loop - use A* pathing algo to find a short path to the player
+
+	var FoxLoop = exports.FoxLoop = function () {
+	  function FoxLoop(gameboard, fox, player, view) {
+	    _classCallCheck(this, FoxLoop);
+
+	    this.gameboard = gameboard;
+	    this.fox = fox;
+	    this.player = player;
+	    this.view = view;
 	  }
-	  View.render();
-	}
 
-	// Initialise game
-	GameBoard.init();
-	var player = Actor.start(PLAYER);
-	var fox = Actor.start(FOX);
-	GameBoard.set(player);
-	GameBoard.set(fox);
-	View.render();
-	window.addEventListener('resize', View.render, false);
-	document.addEventListener('keydown', onKeyDown);
-	setInterval(onFoxTick, FOX_TICK); // Start the hunt!
+	  _createClass(FoxLoop, [{
+	    key: 'run',
+	    value: function run() {
+	      var _this = this;
+
+	      var count = 0;
+	      var possible = [];
+	      var seen = [];
+	      var currentSquare = {
+	        row: this.fox.row, col: this.fox.col,
+	        score: this.getManhattanDistance(this.fox, this.player),
+	        steps: 0
+
+	        // Search for shortest path
+	      };while (currentSquare.row !== this.player.row || currentSquare.col !== this.player.col) {
+	        seen.push(currentSquare);
+	        possible = possible.filter(function (sq) {
+	          return sq !== currentSquare;
+	        });
+	        this.getNextSquares(currentSquare, seen).forEach(function (sq) {
+	          return possible.push(sq);
+	        });
+	        currentSquare = possible.reduce(function (prev, current) {
+	          return prev.score < current.score ? prev : current;
+	        });
+	        count++;
+	        if (count > 500) {
+	          console.error("TOO MANY ITERATIONS!");
+	          break;
+	        }
+	      }
+
+	      // Backtrack to find the next move
+	      while (currentSquare.steps > 1) {
+	        currentSquare = seen.filter(function (sq) {
+	          return _this.getManhattanDistance(sq, currentSquare) === 1;
+	        }).reduce(function (prev, current) {
+	          return prev.steps < current.steps ? prev : current;
+	        });
+	      }
+
+	      // TODO: use Actor.move
+	      this.gameboard.remove(this.fox);
+	      this.fox.row = currentSquare.row;
+	      this.fox.col = currentSquare.col;
+	      this.gameboard.set(this.fox);
+
+	      // Fox catches the player
+	      if (this.fox.collided(this.player)) {
+	        this.gameboard.reset();
+	        this.player.reset();
+	        this.fox.reset();
+	      }
+	      this.view.render();
+	    }
+
+	    // Get and score all the valid, unseen squares that can be accessed from 'sq'
+
+	  }, {
+	    key: 'getNextSquares',
+	    value: function getNextSquares(sq, seen) {
+	      var _this2 = this;
+
+	      return this.getAdjacentSquares(sq).filter(function (square) {
+	        return !seen.some(function (seenSq) {
+	          return seenSq.row === square.row && seenSq.col === square.col;
+	        });
+	      }).filter(function (square) {
+	        return _this2.gameboard.isValidPosition(sq.row, sq.col);
+	      }).map(function (square) {
+	        return _extends({}, square, {
+	          steps: square.steps + 1,
+	          score: square.steps + 1 + _this2.getManhattanDistance(square, _this2.player)
+	        });
+	      });
+	    }
+
+	    // Get the 4 squares adjacent to the given square
+
+	  }, {
+	    key: 'getAdjacentSquares',
+	    value: function getAdjacentSquares(square) {
+	      return [_extends({}, square, { row: square.row + 1 }), _extends({}, square, { row: square.row - 1 }), _extends({}, square, { col: square.col + 1 }), _extends({}, square, { col: square.col - 1 })];
+	    }
+
+	    // Get the 'Manhatten distance' between 2 squares
+
+	  }, {
+	    key: 'getManhattanDistance',
+	    value: function getManhattanDistance(a, b) {
+	      return Math.abs(a.row - b.row) + Math.abs(a.col - b.col);
+	    }
+	  }]);
+
+	  return FoxLoop;
+	}();
 
 /***/ })
 /******/ ]);
