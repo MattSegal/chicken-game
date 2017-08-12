@@ -9,8 +9,10 @@ export default class View {
 
   render() {
     // Render GameBoard to the DOM
-    this.height = Math.ceil(window.innerHeight / C.BOARD_LENGTH)
-    this.width = Math.ceil(window.innerWidth / C.BOARD_LENGTH)
+    const boardHeight = window.innerHeight > C.MAX_LENGTH ? C.MAX_LENGTH : window.innerHeight
+    const boardWidth = window.innerWidth > C.MAX_LENGTH ? C.MAX_LENGTH : window.innerWidth
+    this.height = Math.ceil(boardHeight / C.BOARD_LENGTH)
+    this.width = Math.ceil(boardWidth / C.BOARD_LENGTH)
     this.dom.innerHTML = this.gameboard.grid
       .map(row => this.buildRow(row))
       .reduce((acc, val) => acc + val, '')

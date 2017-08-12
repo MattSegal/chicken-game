@@ -46,11 +46,11 @@
 
 	'use strict';
 
-	var _constants = __webpack_require__(2);
+	var _constants = __webpack_require__(1);
 
 	var _constants2 = _interopRequireDefault(_constants);
 
-	var _actor = __webpack_require__(1);
+	var _actor = __webpack_require__(2);
 
 	var _actor2 = _interopRequireDefault(_actor);
 
@@ -83,6 +83,45 @@
 
 /***/ }),
 /* 1 */
+/***/ (function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var MOVE_DOWN = [1, 0];
+	var MOVE_UP = [-1, 0];
+	var MOVE_LEFT = [0, -1];
+	var MOVE_RIGHT = [0, 1];
+
+	exports.default = {
+	  // Game constants
+	  BOARD_LENGTH: 20, // squares
+	  MAX_LENGTH: 900, // px
+	  FOX_TICK: 300, // ms
+
+	  // Moves
+	  MOVES: {
+	    ArrowDown: MOVE_DOWN,
+	    ArrowUp: MOVE_UP,
+	    ArrowLeft: MOVE_LEFT,
+	    ArrowRight: MOVE_RIGHT,
+	    s: MOVE_DOWN,
+	    w: MOVE_UP,
+	    a: MOVE_LEFT,
+	    d: MOVE_RIGHT
+	  },
+
+	  // Sprites
+	  EMPTY: ' ',
+	  PLAYER: '🐓',
+	  FOX: '🦊',
+	  WALL: '🌲'
+	};
+
+/***/ }),
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -93,7 +132,7 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _constants = __webpack_require__(2);
+	var _constants = __webpack_require__(1);
 
 	var _constants2 = _interopRequireDefault(_constants);
 
@@ -144,44 +183,6 @@
 	exports.default = Actor;
 
 /***/ }),
-/* 2 */
-/***/ (function(module, exports) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	var MOVE_DOWN = [1, 0];
-	var MOVE_UP = [-1, 0];
-	var MOVE_LEFT = [0, -1];
-	var MOVE_RIGHT = [0, 1];
-
-	exports.default = {
-	  // Game constants
-	  BOARD_LENGTH: 20, // px
-	  FOX_TICK: 300, // ms
-
-	  // Moves
-	  MOVES: {
-	    ArrowDown: MOVE_DOWN,
-	    ArrowUp: MOVE_UP,
-	    ArrowLeft: MOVE_LEFT,
-	    ArrowRight: MOVE_RIGHT,
-	    s: MOVE_DOWN,
-	    w: MOVE_UP,
-	    a: MOVE_LEFT,
-	    d: MOVE_RIGHT
-	  },
-
-	  // Sprites
-	  EMPTY: ' ',
-	  PLAYER: '🐓',
-	  FOX: '🦊',
-	  WALL: '🌲'
-	};
-
-/***/ }),
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -193,7 +194,7 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _constants = __webpack_require__(2);
+	var _constants = __webpack_require__(1);
 
 	var _constants2 = _interopRequireDefault(_constants);
 
@@ -262,7 +263,7 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _constants = __webpack_require__(2);
+	var _constants = __webpack_require__(1);
 
 	var _constants2 = _interopRequireDefault(_constants);
 
@@ -285,8 +286,10 @@
 	      var _this = this;
 
 	      // Render GameBoard to the DOM
-	      this.height = Math.ceil(window.innerHeight / _constants2.default.BOARD_LENGTH);
-	      this.width = Math.ceil(window.innerWidth / _constants2.default.BOARD_LENGTH);
+	      var boardHeight = window.innerHeight > _constants2.default.MAX_LENGTH ? _constants2.default.MAX_LENGTH : window.innerHeight;
+	      var boardWidth = window.innerWidth > _constants2.default.MAX_LENGTH ? _constants2.default.MAX_LENGTH : window.innerWidth;
+	      this.height = Math.ceil(boardHeight / _constants2.default.BOARD_LENGTH);
+	      this.width = Math.ceil(boardWidth / _constants2.default.BOARD_LENGTH);
 	      this.dom.innerHTML = this.gameboard.grid.map(function (row) {
 	        return _this.buildRow(row);
 	      }).reduce(function (acc, val) {
@@ -332,11 +335,11 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _constants = __webpack_require__(2);
+	var _constants = __webpack_require__(1);
 
 	var _constants2 = _interopRequireDefault(_constants);
 
-	var _actor = __webpack_require__(1);
+	var _actor = __webpack_require__(2);
 
 	var _actor2 = _interopRequireDefault(_actor);
 

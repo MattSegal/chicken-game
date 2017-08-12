@@ -5,7 +5,8 @@ const MOVE_RIGHT  = [0, 1]
 
 export default {
   // Game constants
-  BOARD_LENGTH: 20, // px
+  BOARD_LENGTH: 20, // squares
+  MAX_LENGTH: 900,  // px
   FOX_TICK: 300,    // ms
 
   // Moves
