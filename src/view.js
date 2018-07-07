@@ -1,31 +1,74 @@
 import C from 'constants'
 
-// View singleton
+// sprites are all 256 x 256
+const SRC_LENGTH = 256 // px
+const PADDING = 5 // px
+
+const getImage =src => {
+  const img = new Image();
+  img.src = src
+  return img
+}
+const loadImage =img => new Promise((fulfill, reject) => {
+  img.onload = () => fulfill(img)
+})
+
+
+const treeImage = getImage('./static/tree.png')
+const foxImage = getImage('./static/fox.png')
+const chickenImage = getImage('./static/chicken.png')
+
+const canvas = document.getElementById('gameboard')
+canvas.width = C.MAX_LENGTH
+canvas.height = C.MAX_LENGTH
+const ctx = canvas.getContext('2d')
+
 export default class View {
-  constructor(gameboard) {
-    this.gameboard = gameboard
-    this.dom = document.getElementById('gameboard')
+
+  static onImagesLoaded() {
+    return Promise.all([
+      loadImage(treeImage),
+      loadImage(foxImage),
+      loadImage(chickenImage),
+    ])
   }
 
-  render() {
-    // Render GameBoard to the DOM
-    const boardHeight = window.innerHeight > C.MAX_LENGTH ? C.MAX_LENGTH : window.innerHeight
-    const boardWidth = window.innerWidth > C.MAX_LENGTH ? C.MAX_LENGTH : window.innerWidth
-    this.height = Math.ceil(boardHeight / C.BOARD_LENGTH)
-    this.width = Math.ceil(boardWidth / C.BOARD_LENGTH)
-    this.dom.innerHTML = this.gameboard.grid
-      .map(row => this.buildRow(row))
-      .reduce((acc, val) => acc + val, '')
+  static getSquareLength() {
+    return canvas.width / C.BOARD_LENGTH
   }
 
-  buildRow(row) {
-    const content = row
-      .map(col => this.buildCol(col))
-      .reduce((acc, val) => acc + val, '')
-    return '<div class="row" style="height:'+this.height+'px;">'+content+'</div>'
+  static drawGrid(grid) {
+    for (let i = 0; i < grid.length; i++) {
+      for (let j = 0; j < grid[i].length; j++) {
+        if (grid[i][j] === C.CHICKEN) {
+          View.drawSprite(chickenImage, i, j)
+        } else if (grid[i][j] === C.FOX) {
+          View.drawSprite(foxImage, i, j)
+        } else if (grid[i][j] === C.TREE) {
+          View.drawSprite(treeImage, i, j)
+        } else {
+          View.clearSquare(i, j)
+        }
+      }
+    }
   }
 
-  buildCol(content) {
-    return '<div class="col" style="width:'+this.width+'px;">'+content+'</div>'
+  static drawSprite(img, row, col) {
+    const squareLength = View.getSquareLength()
+    const x = (col * squareLength) + PADDING
+    const y = (row * squareLength) + PADDING
+    const length = squareLength - (2 * PADDING)
+    ctx.drawImage(
+      img,
+      0, 0, SRC_LENGTH, SRC_LENGTH,
+      x, y, length, length
+    )
+  }
+
+  static clearSquare(row, col) {
+    const squareLength = View.getSquareLength()
+    const x = (col * squareLength)
+    const y = (row * squareLength)
+    ctx.clearRect(x, y, squareLength, squareLength)
   }
 }

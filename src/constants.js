@@ -22,8 +22,8 @@ export default {
   },
 
   // Sprites
-  EMPTY: ' ',
-  PLAYER: '🐓',
-  FOX: '🦊',
-  WALL: '🌲'
+  EMPTY: 'EMPTY',
+  CHICKEN: 'CHICKEN',
+  FOX: 'FOX',
+  TREE: 'TREE'
 }
