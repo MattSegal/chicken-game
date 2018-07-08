@@ -1,37 +1,24 @@
-import C from 'constants'
-import Actor from 'actor'
+import Actor from './base'
 
-// Player key press
-export const onKeyDown = (player, view) => (event) =>  {
-  event.preventDefault()  // Avoid double handling
-  const moveVector = C.MOVES[event.key]
-  if (moveVector && player.canMove(moveVector)) {
-    player.move(moveVector)
-    view.render()
-  }
-}
 
-// Event loop - use A* pathing algo to find a short path to the player
-export class FoxLoop {
-  constructor(gameboard, fox, player, view) {
-    this.gameboard = gameboard
-    this.fox = fox
-    this.player = player
-    this.view = view
-  }
 
-  run() {
+// Uses A* pathing algorithm to find shortest path to the target
+export default class AStarActor extends Actor {
+  runPolicy = () => {
+
+
     let count = 0
     let possible = []
     let seen = []
+    const target = [0, 0]
     let currentSquare = {
-      row: this.fox.row, col: this.fox.col,
-      score: this.getManhattanDistance(this.fox, this.player),
+      pos: this.pos
+      score: this.getManhattanDistance(this.pos, target),
       steps: 0
     }
 
     // Search for shortest path
-    while (currentSquare.row !== this.player.row || currentSquare.col !== this.player.col) {
+    while (currentSquare[0] !== target[0] || currentSquare[1] !== target[1]) {
       seen.push(currentSquare)
       possible = possible.filter(sq => sq !== currentSquare)
       this.getNextSquares(currentSquare, seen).forEach(sq => possible.push(sq))
@@ -42,6 +29,24 @@ export class FoxLoop {
         break
       }
     }
+
+
+
+    const action = null
+    this.nextAction = action
+  }
+}
+
+
+// Get the 'Manhatten distance' between 2 squares
+const getManhattanDistance = (posA, posB) => Math.abs(posA[0] - posB[0]) + Math.abs(posA[1] - posB[1])
+
+
+
+  run() {
+
+
+
 
     // Backtrack to find the next move
     while (currentSquare.steps > 1) {
@@ -61,7 +66,7 @@ export class FoxLoop {
       this.gameboard.reset()
       this.player.reset()
       this.fox.reset()
-    }  
+    }
     this.view.render()
   }
 
@@ -90,5 +95,5 @@ export class FoxLoop {
   // Get the 'Manhatten distance' between 2 squares
   getManhattanDistance(a ,b) {
     return Math.abs(a.row - b.row) + Math.abs(a.col - b.col)
-  } 
+  }
 }

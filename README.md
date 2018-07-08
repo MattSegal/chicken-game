@@ -16,42 +16,12 @@ Issues
 
 # To do
 
-view layer
-
-- make canvas
-- draw trees
-- draw fox
-- draw chicken
-- canvas resize
-
-initialize game state
-
-- pre-populate grid
-- locate fox
-- locate chicken
-
-create API for the fox
-
-- fox policy is random
-- get available actions
-- get game board
-- get chicken location
-
-provide API for the chicken
-
-- chicken policy is random
-- get available actions
-- get game board
-- get fox location
-
 create fox policy
 
-- random policy
 - A* pathing
 
 create chicken policy
 
-- random policy
 - policy iteration
 - value iteration
 - monte carlo

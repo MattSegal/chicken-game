@@ -1,13 +1,20 @@
 import C from 'constants'
 
 import View from './view'
+import GameBoard from './gameboard'
+import PlayerActor from './actors/player'
+import RandomActor from './actors/random'
+// import AStarActor from './actors/a-star'
 
-
-// Initialize grid
-const fillCol = () => Math.random() > 0.2 ? C.EMPTY : C.TREE
-const fillRow = () => Array(C.BOARD_LENGTH).fill(0).map(fillCol)
-const grid = Array(C.BOARD_LENGTH).fill(0).map(fillRow)
+// Initialize board
+const board = new GameBoard()
 
 // Draw grid
-View.onImagesLoaded().then(() => View.drawGrid(grid))
+View.drawWhenReady(board.grid)
 
+// Create actors
+const fox = new RandomActor(C.FOX, board)
+const chicken = new RandomActor(C.CHICKEN, board)
+
+// Run the game
+board.run()

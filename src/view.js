@@ -1,9 +1,5 @@
 import C from 'constants'
 
-// sprites are all 256 x 256
-const SRC_LENGTH = 256 // px
-const PADDING = 5 // px
-
 const getImage =src => {
   const img = new Image();
   img.src = src
@@ -19,11 +15,26 @@ const foxImage = getImage('./static/fox.png')
 const chickenImage = getImage('./static/chicken.png')
 
 const canvas = document.getElementById('gameboard')
-canvas.width = C.MAX_LENGTH
-canvas.height = C.MAX_LENGTH
+canvas.width = canvas.clientWidth
+canvas.height = canvas.clientHeight
+
+window.addEventListener('resize', () => {
+  canvas.width = canvas.clientWidth
+  canvas.height = canvas.clientHeight
+}, false)
+
 const ctx = canvas.getContext('2d')
 
 export default class View {
+
+  static drawWhenReady(grid) {
+    View.onImagesLoaded().then(() => View.drawLoop(grid))
+  }
+
+  static drawLoop(grid) {
+    View.drawGridSquares(grid)
+    requestAnimationFrame(() => View.drawLoop(grid))
+  }
 
   static onImagesLoaded() {
     return Promise.all([
@@ -37,7 +48,7 @@ export default class View {
     return canvas.width / C.BOARD_LENGTH
   }
 
-  static drawGrid(grid) {
+  static drawGridSquares(grid) {
     for (let i = 0; i < grid.length; i++) {
       for (let j = 0; j < grid[i].length; j++) {
         if (grid[i][j] === C.CHICKEN) {
@@ -55,12 +66,12 @@ export default class View {
 
   static drawSprite(img, row, col) {
     const squareLength = View.getSquareLength()
-    const x = (col * squareLength) + PADDING
-    const y = (row * squareLength) + PADDING
-    const length = squareLength - (2 * PADDING)
+    const x = (col * squareLength) + C.PADDING
+    const y = (row * squareLength) + C.PADDING
+    const length = squareLength - (2 * C.PADDING)
     ctx.drawImage(
       img,
-      0, 0, SRC_LENGTH, SRC_LENGTH,
+      0, 0, C.SRC_LENGTH, C.SRC_LENGTH,
       x, y, length, length
     )
   }
