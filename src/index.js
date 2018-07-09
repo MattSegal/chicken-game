@@ -14,7 +14,7 @@ const board = new GameBoard()
 View.drawWhenReady(board.grid)
 
 // Create actors
-const chicken = new RandomActor(C.CHICKEN, board)
+const chicken = new TemporalDifferenceActor(C.CHICKEN, board)
 const fox = new AStarActor(C.FOX, board)
 fox.addTarget(chicken)
 chicken.addTarget(fox)

@@ -83,7 +83,7 @@
 	_view2.default.drawWhenReady(board.grid);
 
 	// Create actors
-	var chicken = new _random2.default(_constants2.default.CHICKEN, board);
+	var chicken = new _temporalDifference2.default(_constants2.default.CHICKEN, board);
 	var fox = new _aStar2.default(_constants2.default.FOX, board);
 	fox.addTarget(chicken);
 	chicken.addTarget(fox);
@@ -638,7 +638,7 @@
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 	// Uses A* pathing algorithm to find shortest path to the target
-	// Throw in a random move every 10 steps to fuck with the RL algos
+	// Throw in a random move every 10 steps
 	var AStarActor = function (_Actor) {
 	  _inherits(AStarActor, _Actor);
 
@@ -659,6 +659,10 @@
 
 	    _this.runPolicy = function () {
 	      _this.policySteps += 1;
+	      // Do nothing every 2nd step
+	      if (_this.policySteps % 2 == 0) {
+	        return;
+	      }
 	      if (_this.policySteps > 10) {
 	        // Randomly choose next action
 	        _this.policySteps = 0;
@@ -826,8 +830,8 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var ALPHA = 0.9;
-	var GAMMA = 0.9;
+	var ALPHA = 1;
+	var GAMMA = 1;
 
 	var TemporalDifferenceActor = function (_Actor) {
 	  _inherits(TemporalDifferenceActor, _Actor);
@@ -842,12 +846,18 @@
 	    };
 
 	    _this.runPolicy = function () {
-	      // Reward the chicken for being far away from the fox
-	      // and push it for being too close
-	      _this.reward += getManhattanDistance(_this, _this.target) - 3;
+	      // Reward the chicken for surviving, and punish it for being too close
+	      var reward = void 0;
+	      var distance = getManhattanDistance(_this, _this.target);
+	      if (distance < 4) {
+	        reward = -1;
+	      } else {
+	        reward = 1;
+	      }
+	      _this.totalReward += reward;
 
-	      if (_this.reward % 100 == 0) {
-	        console.log(_this.reward);
+	      if (_this.totalReward % 100 == 0) {
+	        console.log(_this.totalReward);
 	      }
 
 	      // Using the current value function, greedily choose where we're going to go next
@@ -899,7 +909,7 @@
 	      // with the temporal difference algorithm
 	      var currentValue = _this.getValue(_this.pos);
 	      var expectedValue = _this.getValue(newPosition);
-	      var targetValue = _this.reward + GAMMA * expectedValue;
+	      var targetValue = reward + GAMMA * expectedValue;
 	      var error = targetValue - currentValue;
 	      var newValue = currentValue + ALPHA * error;
 	      _this.setValue(newValue);
@@ -914,13 +924,17 @@
 	    };
 
 	    _this.values = {};
-	    _this.reward = 0;
+	    _this.totalReward = 0;
 	    var grid = _this.board.grid;
 	    // Initialize value of all states to 0
 	    for (var a = 0; a < grid.length; a++) {
+	      // chicken row
 	      for (var b = 0; b < grid.length; b++) {
+	        // chicken col
 	        for (var c = 0; c < grid.length; c++) {
+	          // fox row
 	          for (var d = 0; d < grid.length; d++) {
+	            // fox col
 	            if (grid[a][b] !== _constants2.default.TREE && grid[c][d] !== _constants2.default.TREE) {
 	              if (typeof _this.values[a] === 'undefined') {
 	                _this.values[a] = {};
@@ -944,8 +958,8 @@
 	    key: 'reset',
 	    value: function reset() {
 	      _get(TemporalDifferenceActor.prototype.__proto__ || Object.getPrototypeOf(TemporalDifferenceActor.prototype), 'reset', this).call(this);
-	      console.log(this.reward);
-	      this.reward = 0;
+	      console.log(this.totalReward);
+	      this.totalReward = 0;
 	    }
 	  }]);
 

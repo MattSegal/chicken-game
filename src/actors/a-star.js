@@ -3,7 +3,7 @@ import Actor from './base'
 
 
 // Uses A* pathing algorithm to find shortest path to the target
-// Throw in a random move every 10 steps to fuck with the RL algos
+// Throw in a random move every 10 steps
 export default class AStarActor extends Actor {
 
   constructor(value, board) {
@@ -23,6 +23,10 @@ export default class AStarActor extends Actor {
 
   runPolicy = () => {
     this.policySteps += 1
+    // Do nothing every 2nd step
+    if (this.policySteps % 2 == 0) {
+      return
+    }
     if (this.policySteps > 10) {
       // Randomly choose next action
       this.policySteps = 0
