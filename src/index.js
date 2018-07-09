@@ -4,7 +4,8 @@ import View from './view'
 import GameBoard from './gameboard'
 import PlayerActor from './actors/player'
 import RandomActor from './actors/random'
-// import AStarActor from './actors/a-star'
+import AStarActor from './actors/a-star'
+import TemporalDifferenceActor from './actors/temporal-difference'
 
 // Initialize board
 const board = new GameBoard()
@@ -13,8 +14,10 @@ const board = new GameBoard()
 View.drawWhenReady(board.grid)
 
 // Create actors
-const fox = new RandomActor(C.FOX, board)
 const chicken = new RandomActor(C.CHICKEN, board)
+const fox = new AStarActor(C.FOX, board)
+fox.addTarget(chicken)
+chicken.addTarget(fox)
 
 // Run the game
 board.run()

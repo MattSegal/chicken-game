@@ -17,8 +17,14 @@ export default class Actor {
     // To be implemented by child class
   }
 
-  reset = () => {
-    this.pos = randomPosition()
+  reset() {
+    let isEmpty = false
+    while (!isEmpty) {
+      this.pos = randomPosition()
+      if (this.board.grid[this.pos[0]][this.pos[1]] === C.EMPTY) {
+        isEmpty = true
+      }
+    }
     this.board.addActor(this)
   }
 

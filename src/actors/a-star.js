@@ -1,99 +1,135 @@
+import C from 'constants'
 import Actor from './base'
 
 
-
 // Uses A* pathing algorithm to find shortest path to the target
+// Throw in a random move every 10 steps to fuck with the RL algos
 export default class AStarActor extends Actor {
+
+  constructor(value, board) {
+    super(value, board)
+    this.policySteps = 0
+  }
+
+  addTarget = target => {
+    this.target = target
+  }
+
+  randomPolicy = () => {
+    const actions = this.getActions()
+    const action = actions[Math.floor(Math.random() * actions.length)]
+    this.nextAction = action
+  }
+
   runPolicy = () => {
-
-
-    let count = 0
-    let possible = []
-    let seen = []
-    const target = [0, 0]
-    let currentSquare = {
-      pos: this.pos
-      score: this.getManhattanDistance(this.pos, target),
-      steps: 0
+    this.policySteps += 1
+    if (this.policySteps > 10) {
+      // Randomly choose next action
+      this.policySteps = 0
+      this.randomPolicy()
+      return
     }
 
-    // Search for shortest path
-    while (currentSquare[0] !== target[0] || currentSquare[1] !== target[1]) {
+    let iterations = 0
+    let possible = []
+    let seen = []
+    let currentSquare = {
+      pos: this.pos,
+      steps: 0
+    }
+    currentSquare['score'] = getManhattanDistance(currentSquare, this.target)
+    const getNextSquares = getNextSquaresFactory(this.board, seen, this.target)
+
+    // Find a square with the shortest distance to the target
+    while (!samePosition(currentSquare, this.target)) {
+      // Add current square to list of seen squares
       seen.push(currentSquare)
-      possible = possible.filter(sq => sq !== currentSquare)
-      this.getNextSquares(currentSquare, seen).forEach(sq => possible.push(sq))
-      currentSquare = possible.reduce((prev, current) => (prev.score < current.score) ? prev : current)
-      count++
-      if (count > 500) {
-        console.error("TOO MANY ITERATIONS!")
-        break
+
+      // Remove the current square from possible choices
+      possible = possible.filter(s => !samePosition(s, currentSquare))
+
+      // Find the new squares reachable from current square
+      // and then add them to the list of possible squares
+      getNextSquares(currentSquare).forEach(square => possible.push(square))
+
+      if (possible.length < 1) {
+        console.error('Cannot reach target: ', this.target)
+        this.board.reset()
+        return
+      }
+
+      // Select possible square with the fewest steps
+      currentSquare = possible.reduce(selectFewestSteps)
+
+      // Break loop if we have done too many iterations
+      iterations++
+      if (iterations > 5000) {
+        console.error('Too many iterations trying to reach square: ', this.target)
+        this.board.reset()
+        return
       }
     }
 
-
-
-    const action = null
-    this.nextAction = action
+    // Backtrack from our current square to find the next move
+    while (currentSquare.steps > 1) {
+      currentSquare = seen
+        // Find seen squares that are 1 distance from the current square
+        .filter(square => getManhattanDistance(square, currentSquare) === 1)
+        // Select the one with the lowest steps
+        .reduce(selectFewestSteps)
+    }
+    if (currentSquare) {
+      this.nextAction = chooseAction(this, currentSquare)
+    }
   }
 }
 
-
 // Get the 'Manhatten distance' between 2 squares
-const getManhattanDistance = (posA, posB) => Math.abs(posA[0] - posB[0]) + Math.abs(posA[1] - posB[1])
+const getManhattanDistance = (sqA, sqB) =>
+  Math.abs(sqA.pos[0] - sqB.pos[0]) + Math.abs(sqA.pos[1] - sqB.pos[1])
+
+// Get next possible unseen squares from the current square
+const getNextSquaresFactory = (board, seen, target) => currentSquare =>
+  board.getActions(currentSquare.pos[0], currentSquare.pos[1])
+  .map(actionsToAdjacentSquares(currentSquare))
+  .filter(square => !(seen.some(seenSquare => samePosition(seenSquare, square))))
+  .map(square => ({
+    pos: square.pos,
+    steps: currentSquare.steps + 1,
+    score: currentSquare.steps + 1 + getManhattanDistance(square, target)
+  }))
+
+const sameRow = (sqA, sqB) =>
+  sqA.pos[0] === sqB.pos[0]
+
+const sameCol = (sqA, sqB) =>
+  sqA.pos[1] === sqB.pos[1]
+
+const samePosition = (sqA, sqB) =>
+  sameRow(sqA, sqB) && sameCol(sqA, sqB)
+
+const selectFewestSteps = (oldSquare, newSquare) =>
+  (oldSquare.steps < newSquare.steps) ? oldSquare : newSquare
+
+// Maps an action (NORTH / SOUTH / EAST / WEST)
+// into a square that is next to 'square'
+const actionsToAdjacentSquares = square => action => ({
+  pos: [
+    square.pos[0] + C.VECTORS[action][0],
+    square.pos[1] + C.VECTORS[action][1],
+  ]
+})
 
 
-
-  run() {
-
-
-
-
-    // Backtrack to find the next move
-    while (currentSquare.steps > 1) {
-      currentSquare = seen
-        .filter(sq => this.getManhattanDistance(sq, currentSquare) === 1)
-        .reduce((prev, current) => (prev.steps < current.steps) ? prev : current)
-    }
-
-    // TODO: use Actor.move
-    this.gameboard.remove(this.fox)
-    this.fox.row = currentSquare.row
-    this.fox.col = currentSquare.col
-    this.gameboard.set(this.fox)
-
-    // Fox catches the player
-    if (this.fox.collided(this.player)) {
-      this.gameboard.reset()
-      this.player.reset()
-      this.fox.reset()
-    }
-    this.view.render()
+const chooseAction = (start, chosen) => {
+  if (chosen.pos[0] === start.pos[0] + 1 && chosen.pos[1] === start.pos[1]) {
+    return C.ACTIONS.SOUTH
+  } else if (chosen.pos[0] === start.pos[0] - 1 && chosen.pos[1] === start.pos[1]) {
+    return C.ACTIONS.NORTH
+  } else if (chosen.pos[0] === start.pos[0] && chosen.pos[1] === start.pos[1] + 1) {
+    return C.ACTIONS.EAST
+  } else if (chosen.pos[0] === start.pos[0] && chosen.pos[1] === start.pos[1] - 1) {
+    return C.ACTIONS.WEST
   }
-
-  // Get and score all the valid, unseen squares that can be accessed from 'sq'
-  getNextSquares(sq, seen) {
-    return this.getAdjacentSquares(sq)
-    .filter(square => !(seen.some(seenSq => seenSq.row === square.row && seenSq.col === square.col)))
-    .filter(square => this.gameboard.isValidPosition(sq.row, sq.col))
-    .map(square => ({
-      ...square,
-      steps: square.steps + 1,
-      score: square.steps + 1 + this.getManhattanDistance(square, this.player)
-    }))
-  }
-
-  // Get the 4 squares adjacent to the given square
-  getAdjacentSquares(square) {
-    return [
-      {...square, row: square.row + 1},
-      {...square, row: square.row - 1},
-      {...square, col: square.col + 1},
-      {...square, col: square.col - 1}
-    ]
-  }
-
-  // Get the 'Manhatten distance' between 2 squares
-  getManhattanDistance(a ,b) {
-    return Math.abs(a.row - b.row) + Math.abs(a.col - b.col)
-  }
+  return null
 }

@@ -38,3 +38,11 @@ create about page
 
 - about page modal for the entire site
 - about page modal for each algorithm
+
+create performance visualization
+
+- chicken performance distribution
+- fox performance distribution
+- number of iterations
+
+add a 'train' button to speed up training for X ticks
