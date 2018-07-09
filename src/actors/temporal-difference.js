@@ -1,21 +1,21 @@
 import C from '../constants'
 import Actor from './base'
 
-const ALPHA = 0.9
-const GAMMA = 0.9
+const ALPHA = 1
+const GAMMA = 1
 
 export default class TemporalDifferenceActor extends Actor {
 
   constructor(value, board) {
     super(value, board)
     this.values = {}
-    this.reward = 0
+    this.totalReward = 0
     const grid = this.board.grid
     // Initialize value of all states to 0
-    for (let a = 0; a < grid.length; a++) {
-      for (let b = 0; b < grid.length; b++) {
-        for (let c = 0; c < grid.length; c++) {
-          for (let d = 0; d < grid.length; d++) {
+    for (let a = 0; a < grid.length; a++) {  // chicken row
+      for (let b = 0; b < grid.length; b++) { // chicken col
+        for (let c = 0; c < grid.length; c++) { // fox row
+          for (let d = 0; d < grid.length; d++) { // fox col
             if (grid[a][b] !== C.TREE && grid[c][d] !== C.TREE) {
               if (typeof(this.values[a]) === 'undefined') {
                 this.values[a] = {}
@@ -36,8 +36,8 @@ export default class TemporalDifferenceActor extends Actor {
 
   reset() {
     super.reset()
-    console.log(this.reward)
-    this.reward = 0
+    console.log(this.totalReward)
+    this.totalReward = 0
   }
 
   addTarget = target => {
@@ -45,12 +45,18 @@ export default class TemporalDifferenceActor extends Actor {
   }
 
   runPolicy = () => {
-    // Reward the chicken for being far away from the fox
-    // and push it for being too close
-    this.reward += getManhattanDistance(this, this.target) - 3
+    // Reward the chicken for surviving, and punish it for being too close
+    let reward
+    const distance = getManhattanDistance(this, this.target)
+    if (distance < 4) {
+      reward = -1
+    } else {
+      reward = 1
+    }
+    this.totalReward += reward
 
-    if (this.reward % 100 == 0) {
-      console.log(this.reward)
+    if (this.totalReward % 100 == 0) {
+      console.log(this.totalReward)
     }
 
     // Using the current value function, greedily choose where we're going to go next
@@ -83,7 +89,7 @@ export default class TemporalDifferenceActor extends Actor {
     // with the temporal difference algorithm
     const currentValue = this.getValue(this.pos)
     const expectedValue = this.getValue(newPosition)
-    const targetValue = this.reward + GAMMA * expectedValue
+    const targetValue = reward + GAMMA * expectedValue
     const error = targetValue - currentValue
     const newValue = currentValue + ALPHA * error
     this.setValue(newValue)
