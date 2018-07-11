@@ -50,7 +50,7 @@
 
 	var _constants2 = _interopRequireDefault(_constants);
 
-	var _view = __webpack_require__(4);
+	var _view = __webpack_require__(2);
 
 	var _view2 = _interopRequireDefault(_view);
 
@@ -58,19 +58,19 @@
 
 	var _gameboard2 = _interopRequireDefault(_gameboard);
 
-	var _player = __webpack_require__(6);
+	var _player = __webpack_require__(4);
 
 	var _player2 = _interopRequireDefault(_player);
 
-	var _random = __webpack_require__(8);
+	var _random = __webpack_require__(6);
 
 	var _random2 = _interopRequireDefault(_random);
 
-	var _aStar = __webpack_require__(9);
+	var _aStar = __webpack_require__(7);
 
 	var _aStar2 = _interopRequireDefault(_aStar);
 
-	var _temporalDifference = __webpack_require__(10);
+	var _temporalDifference = __webpack_require__(8);
 
 	var _temporalDifference2 = _interopRequireDefault(_temporalDifference);
 
@@ -83,8 +83,8 @@
 	_view2.default.drawWhenReady(board.grid);
 
 	// Create actors
-	var chicken = new _temporalDifference2.default(_constants2.default.CHICKEN, board);
-	var fox = new _aStar2.default(_constants2.default.FOX, board);
+	var chicken = new _temporalDifference2.default('chicken', _constants2.default.CHICKEN, board);
+	var fox = new _aStar2.default('fox', _constants2.default.FOX, board);
 	fox.addTarget(chicken);
 	chicken.addTarget(fox);
 
@@ -132,166 +132,7 @@
 	};
 
 /***/ }),
-/* 2 */,
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	var _constants = __webpack_require__(1);
-
-	var _constants2 = _interopRequireDefault(_constants);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var fillCol = function fillCol() {
-	  return Math.random() > 0.2 ? _constants2.default.EMPTY : _constants2.default.TREE;
-	};
-	var fillRow = function fillRow() {
-	  return Array(_constants2.default.BOARD_LENGTH).fill(0).map(fillCol);
-	};
-
-	// Game model singleton
-
-	var GameBoard = function GameBoard() {
-	  var _this = this;
-
-	  _classCallCheck(this, GameBoard);
-
-	  this.setupGrid = function () {
-	    _this.grid = Array(_constants2.default.BOARD_LENGTH).fill(0).map(fillRow);
-	  };
-
-	  this.reset = function () {
-	    clearInterval(_this.timerId);
-	    var _iteratorNormalCompletion = true;
-	    var _didIteratorError = false;
-	    var _iteratorError = undefined;
-
-	    try {
-	      for (var _iterator = _this.actors[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	        var actor = _step.value;
-
-	        _this.grid[actor.pos[0]][actor.pos[1]] = _constants2.default.EMPTY;
-	        actor.reset();
-	        _this.setActorPosition(actor);
-	      }
-	    } catch (err) {
-	      _didIteratorError = true;
-	      _iteratorError = err;
-	    } finally {
-	      try {
-	        if (!_iteratorNormalCompletion && _iterator.return) {
-	          _iterator.return();
-	        }
-	      } finally {
-	        if (_didIteratorError) {
-	          throw _iteratorError;
-	        }
-	      }
-	    }
-
-	    _this.run();
-	  };
-
-	  this.addActor = function (actor) {
-	    if (!_this.actors.includes(actor)) {
-	      _this.actors.push(actor);
-	      _this.setActorPosition(actor);
-	    }
-	  };
-
-	  this.moveActors = function () {
-	    var _iteratorNormalCompletion2 = true;
-	    var _didIteratorError2 = false;
-	    var _iteratorError2 = undefined;
-
-	    try {
-	      for (var _iterator2 = _this.actors[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	        var actor = _step2.value;
-
-	        actor.runPolicy();
-	        var action = actor.nextAction;
-	        actor.nextAction = null;
-	        if (action) {
-	          _this.clearPosition(actor.pos);
-	          actor.pos[0] += _constants2.default.VECTORS[action][0];
-	          actor.pos[1] += _constants2.default.VECTORS[action][1];
-	          _this.setActorPosition(actor);
-	        }
-	      }
-	    } catch (err) {
-	      _didIteratorError2 = true;
-	      _iteratorError2 = err;
-	    } finally {
-	      try {
-	        if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	          _iterator2.return();
-	        }
-	      } finally {
-	        if (_didIteratorError2) {
-	          throw _iteratorError2;
-	        }
-	      }
-	    }
-	  };
-
-	  this.setActorPosition = function (actor) {
-	    _this.grid[actor.pos[0]][actor.pos[1]] = actor.value;
-	  };
-
-	  this.clearPosition = function (pos) {
-	    _this.grid[pos[0]][pos[1]] = _constants2.default.EMPTY;
-	  };
-
-	  this.getActions = function (row, col) {
-	    var actions = [];
-	    var max = _constants2.default.BOARD_LENGTH - 1;
-	    if (row < 0 || col < 0 || col > max || row > max) return actions;
-	    row > 0 && _this.grid[row - 1][col] !== _constants2.default.TREE && actions.push(_constants2.default.ACTIONS.NORTH);
-	    row < max && _this.grid[row + 1][col] !== _constants2.default.TREE && actions.push(_constants2.default.ACTIONS.SOUTH);
-	    col > 0 && _this.grid[row][col - 1] !== _constants2.default.TREE && actions.push(_constants2.default.ACTIONS.WEST);
-	    col < max && _this.grid[row][col + 1] !== _constants2.default.TREE && actions.push(_constants2.default.ACTIONS.EAST);
-	    return actions;
-	  };
-
-	  this.run = function () {
-	    _this.timerId = setInterval(function () {
-	      _this.moveActors();
-	      if (samePosition(_this.actors[0], _this.actors[1])) {
-	        _this.reset();
-	      }
-	    }, _constants2.default.TICK);
-	  };
-
-	  this.actors = [];
-	  this.setupGrid();
-	  this.timerId = null;
-	};
-
-	exports.default = GameBoard;
-
-
-	var sameRow = function sameRow(sqA, sqB) {
-	  return sqA.pos[0] === sqB.pos[0];
-	};
-
-	var sameCol = function sameCol(sqA, sqB) {
-	  return sqA.pos[1] === sqB.pos[1];
-	};
-
-	var samePosition = function samePosition(sqA, sqB) {
-	  return sameRow(sqA, sqB) && sameCol(sqA, sqB);
-	};
-
-/***/ }),
-/* 4 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -410,8 +251,7 @@
 	exports.default = View;
 
 /***/ }),
-/* 5 */,
-/* 6 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -420,7 +260,168 @@
 	  value: true
 	});
 
-	var _base = __webpack_require__(7);
+	var _constants = __webpack_require__(1);
+
+	var _constants2 = _interopRequireDefault(_constants);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var fillCol = function fillCol() {
+	  return Math.random() > 0.2 ? _constants2.default.EMPTY : _constants2.default.TREE;
+	};
+	var fillRow = function fillRow() {
+	  return Array(_constants2.default.BOARD_LENGTH).fill(0).map(fillCol);
+	};
+
+	// Game model singleton
+
+	var GameBoard = function GameBoard() {
+	  var _this = this;
+
+	  _classCallCheck(this, GameBoard);
+
+	  this.setupGrid = function () {
+	    _this.grid = Array(_constants2.default.BOARD_LENGTH).fill(0).map(fillRow);
+	  };
+
+	  this.reset = function () {
+	    clearInterval(_this.timerId);
+	    var _iteratorNormalCompletion = true;
+	    var _didIteratorError = false;
+	    var _iteratorError = undefined;
+
+	    try {
+	      for (var _iterator = _this.actors[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	        var actor = _step.value;
+
+	        _this.grid[actor.pos[0]][actor.pos[1]] = _constants2.default.EMPTY;
+	        actor.reset();
+	        _this.setActorPosition(actor);
+	      }
+	    } catch (err) {
+	      _didIteratorError = true;
+	      _iteratorError = err;
+	    } finally {
+	      try {
+	        if (!_iteratorNormalCompletion && _iterator.return) {
+	          _iterator.return();
+	        }
+	      } finally {
+	        if (_didIteratorError) {
+	          throw _iteratorError;
+	        }
+	      }
+	    }
+
+	    _this.run();
+	  };
+
+	  this.addActor = function (actor) {
+	    if (!_this.actors.includes(actor)) {
+	      _this.actors.push(actor);
+	      _this.setActorPosition(actor);
+	    }
+	  };
+
+	  this.moveActors = function () {
+	    var _iteratorNormalCompletion2 = true;
+	    var _didIteratorError2 = false;
+	    var _iteratorError2 = undefined;
+
+	    try {
+	      for (var _iterator2 = _this.actors[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	        var actor = _step2.value;
+
+	        actor.timestep();
+	        var action = actor.nextAction;
+	        actor.nextAction = null;
+	        if (action) {
+	          _this.clearPosition(actor.pos);
+	          actor.pos[0] += _constants2.default.VECTORS[action][0];
+	          actor.pos[1] += _constants2.default.VECTORS[action][1];
+	          _this.setActorPosition(actor);
+	        }
+	      }
+	    } catch (err) {
+	      _didIteratorError2 = true;
+	      _iteratorError2 = err;
+	    } finally {
+	      try {
+	        if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	          _iterator2.return();
+	        }
+	      } finally {
+	        if (_didIteratorError2) {
+	          throw _iteratorError2;
+	        }
+	      }
+	    }
+	  };
+
+	  this.setActorPosition = function (actor) {
+	    _this.grid[actor.pos[0]][actor.pos[1]] = actor.value;
+	  };
+
+	  this.clearPosition = function (pos) {
+	    _this.grid[pos[0]][pos[1]] = _constants2.default.EMPTY;
+	  };
+
+	  this.getActions = function (row, col) {
+	    var actions = [];
+	    var max = _constants2.default.BOARD_LENGTH - 1;
+	    if (row < 0 || col < 0 || col > max || row > max) return actions;
+	    row > 0 && _this.grid[row - 1][col] !== _constants2.default.TREE && actions.push(_constants2.default.ACTIONS.NORTH);
+	    row < max && _this.grid[row + 1][col] !== _constants2.default.TREE && actions.push(_constants2.default.ACTIONS.SOUTH);
+	    col > 0 && _this.grid[row][col - 1] !== _constants2.default.TREE && actions.push(_constants2.default.ACTIONS.WEST);
+	    col < max && _this.grid[row][col + 1] !== _constants2.default.TREE && actions.push(_constants2.default.ACTIONS.EAST);
+	    return actions;
+	  };
+
+	  this.run = function () {
+	    _this.timerId = setInterval(function () {
+	      _this.moveActors();
+	      if (samePosition(_this.actors[0], _this.actors[1])) {
+	        // Game over
+	        _this.reset();
+	      }
+	    }, _constants2.default.TICK);
+	  };
+
+	  this.actors = [];
+	  this.setupGrid();
+	  this.timerId = null;
+	};
+
+	exports.default = GameBoard;
+
+
+	var sameRow = function sameRow(sqA, sqB) {
+	  return sqA.pos[0] === sqB.pos[0];
+	};
+
+	var sameCol = function sameCol(sqA, sqB) {
+	  return sqA.pos[1] === sqB.pos[1];
+	};
+
+	var samePosition = function samePosition(sqA, sqB) {
+	  return sameRow(sqA, sqB) && sameCol(sqA, sqB);
+	};
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _base = __webpack_require__(5);
 
 	var _base2 = _interopRequireDefault(_base);
 
@@ -447,14 +448,10 @@
 	var PlayerActor = function (_Actor) {
 	  _inherits(PlayerActor, _Actor);
 
-	  function PlayerActor(value, board) {
+	  function PlayerActor(name, value, board) {
 	    _classCallCheck(this, PlayerActor);
 
-	    var _this = _possibleConstructorReturn(this, (PlayerActor.__proto__ || Object.getPrototypeOf(PlayerActor)).call(this, value, board));
-
-	    _this.runPolicy = function () {
-	      // Do nothing
-	    };
+	    var _this = _possibleConstructorReturn(this, (PlayerActor.__proto__ || Object.getPrototypeOf(PlayerActor)).call(this, name, value, board));
 
 	    document.addEventListener('keydown', function (e) {
 	      var nextAction = MOVES[e.key] || null;
@@ -466,13 +463,20 @@
 	    return _this;
 	  }
 
+	  _createClass(PlayerActor, [{
+	    key: 'timestep',
+	    value: function timestep() {
+	      // Do nothing
+	    }
+	  }]);
+
 	  return PlayerActor;
 	}(_base2.default);
 
 	exports.default = PlayerActor;
 
 /***/ }),
-/* 7 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -501,19 +505,20 @@
 	// Represents the chicken/fox on the game board
 
 	var Actor = function () {
-	  function Actor(value, board) {
+	  function Actor(name, value, board) {
 	    var _this = this;
 
 	    _classCallCheck(this, Actor);
 
-	    this.runPolicy = function () {
-	      // To be implemented by child class
+	    this.addTarget = function (target) {
+	      _this.target = target;
 	    };
 
 	    this.getActions = function () {
 	      return _this.board.getActions(_this.pos[0], _this.pos[1]);
 	    };
 
+	    this.name = name;
 	    this.value = value;
 	    this.nextAction = null;
 	    this.board = board;
@@ -521,6 +526,18 @@
 	  }
 
 	  _createClass(Actor, [{
+	    key: 'timestep',
+	    value: function timestep() {
+	      // Perform all actions for this timestep
+	      // To be implemented by child class
+	    }
+	  }, {
+	    key: 'getReward',
+	    value: function getReward() {
+	      // Get the reward for this time-step
+	      return 0;
+	    }
+	  }, {
 	    key: 'reset',
 	    value: function reset() {
 	      var isEmpty = false;
@@ -532,6 +549,44 @@
 	      }
 	      this.board.addActor(this);
 	    }
+	  }], [{
+	    key: 'getManhattanDistance',
+
+
+	    // Get the 'Manhatten distance' between 2 actors
+	    value: function getManhattanDistance(actorA, actorB) {
+	      return Math.abs(actorA.pos[0] - actorB.pos[0]) + Math.abs(actorA.pos[1] - actorB.pos[1]);
+	    }
+
+	    // Get new position given a current position and an action
+
+	  }, {
+	    key: 'getNewPosition',
+	    value: function getNewPosition(action, oldPosition) {
+	      return [oldPosition[0] + _constants2.default.VECTORS[action][0], oldPosition[1] + _constants2.default.VECTORS[action][1]];
+	    }
+
+	    // Get action given current position and new position
+
+	  }, {
+	    key: 'getActionFromPositions',
+	    value: function getActionFromPositions(start, end) {
+	      if (end[0] === start[0] + 1 && end[1] === start[1]) {
+	        return _constants2.default.ACTIONS.SOUTH;
+	      } else if (end[0] === start[0] - 1 && end[1] === start[1]) {
+	        return _constants2.default.ACTIONS.NORTH;
+	      } else if (end[0] === start[0] && end[1] === start[1] + 1) {
+	        return _constants2.default.ACTIONS.EAST;
+	      } else if (end[0] === start[0] && end[1] === start[1] - 1) {
+	        return _constants2.default.ACTIONS.WEST;
+	      }
+	      return null;
+	    }
+	  }, {
+	    key: 'samePosition',
+	    value: function samePosition(posA, posB) {
+	      return posA[0] == posB[0] && posA[1] == posB[1];
+	    }
 	  }]);
 
 	  return Actor;
@@ -540,7 +595,7 @@
 	exports.default = Actor;
 
 /***/ }),
-/* 8 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -553,7 +608,7 @@
 
 	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-	var _base = __webpack_require__(7);
+	var _base = __webpack_require__(5);
 
 	var _base2 = _interopRequireDefault(_base);
 
@@ -569,52 +624,29 @@
 	var RandomActor = function (_Actor) {
 	  _inherits(RandomActor, _Actor);
 
-	  function RandomActor(value, board) {
+	  function RandomActor() {
 	    _classCallCheck(this, RandomActor);
 
-	    var _this = _possibleConstructorReturn(this, (RandomActor.__proto__ || Object.getPrototypeOf(RandomActor)).call(this, value, board));
-
-	    _this.addTarget = function (target) {
-	      _this.target = target;
-	    };
-
-	    _this.runPolicy = function () {
-	      _this.reward += getManhattanDistance(_this, _this.target) - 3;
-	      if (_this.reward % 100 == 0) {
-	        console.log(_this.reward);
-	      }
-
-	      var actions = _this.getActions();
-	      var action = actions[Math.floor(Math.random() * actions.length)];
-	      _this.nextAction = action;
-	    };
-
-	    _this.reward = 0;
-	    return _this;
+	    return _possibleConstructorReturn(this, (RandomActor.__proto__ || Object.getPrototypeOf(RandomActor)).apply(this, arguments));
 	  }
 
 	  _createClass(RandomActor, [{
-	    key: 'reset',
-	    value: function reset() {
-	      _get(RandomActor.prototype.__proto__ || Object.getPrototypeOf(RandomActor.prototype), 'reset', this).call(this);
-	      console.log(this.reward);
-	      this.reward = 0;
+	    key: 'timestep',
+	    value: function timestep() {
+	      _get(RandomActor.prototype.__proto__ || Object.getPrototypeOf(RandomActor.prototype), 'timestep', this).call(this);
+	      var actions = this.getActions();
+	      var action = actions[Math.floor(Math.random() * actions.length)];
+	      this.nextAction = action;
 	    }
 	  }]);
 
 	  return RandomActor;
 	}(_base2.default);
 
-	// Get the 'Manhatten distance' between 2 actors
-
-
 	exports.default = RandomActor;
-	var getManhattanDistance = function getManhattanDistance(actorA, actorB) {
-	  return Math.abs(actorA.pos[0] - actorB.pos[0]) + Math.abs(actorA.pos[1] - actorB.pos[1]);
-	};
 
 /***/ }),
-/* 9 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -623,11 +655,15 @@
 	  value: true
 	});
 
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 	var _constants = __webpack_require__(1);
 
 	var _constants2 = _interopRequireDefault(_constants);
 
-	var _base = __webpack_require__(7);
+	var _base = __webpack_require__(5);
 
 	var _base2 = _interopRequireDefault(_base);
 
@@ -644,74 +680,122 @@
 	var AStarActor = function (_Actor) {
 	  _inherits(AStarActor, _Actor);
 
-	  function AStarActor(value, board) {
+	  function AStarActor(name, value, board) {
 	    _classCallCheck(this, AStarActor);
 
-	    var _this = _possibleConstructorReturn(this, (AStarActor.__proto__ || Object.getPrototypeOf(AStarActor)).call(this, value, board));
+	    var _this = _possibleConstructorReturn(this, (AStarActor.__proto__ || Object.getPrototypeOf(AStarActor)).call(this, name, value, board));
 
-	    _this.addTarget = function (target) {
-	      _this.target = target;
-	    };
+	    _this.policySteps = 0;
 
-	    _this.randomPolicy = function () {
-	      var actions = _this.getActions();
-	      var action = actions[Math.floor(Math.random() * actions.length)];
-	      _this.nextAction = action;
-	    };
+	    // Setup a row + col lookup table that scores all moves on the gameboard
+	    _this.squares = {};
+	    for (var a = 0; a < _constants2.default.BOARD_LENGTH; a++) {
+	      for (var b = 0; b < _constants2.default.BOARD_LENGTH; b++) {
+	        _this.squares[keyFromPosition([a, b])] = {
+	          score: null,
+	          steps: null
+	        };
+	      }
+	    }
+	    return _this;
+	  }
 
-	    _this.runPolicy = function () {
-	      _this.policySteps += 1;
-	      // Do nothing every 2nd step
-	      if (_this.policySteps % 2 == 0) {
+	  _createClass(AStarActor, [{
+	    key: 'setupSquares',
+	    value: function setupSquares() {}
+	  }, {
+	    key: 'timestep',
+	    value: function timestep() {
+	      _get(AStarActor.prototype.__proto__ || Object.getPrototypeOf(AStarActor.prototype), 'timestep', this).call(this);
+	      this.policySteps += 1;
+	      // Do nothing every 2nd-3rd step
+	      if (this.policySteps % (3 - Math.floor(Math.random() * 1)) == 0) {
 	        return;
 	      }
-	      if (_this.policySteps > 10) {
-	        // Randomly choose next action
-	        _this.policySteps = 0;
-	        _this.randomPolicy();
+
+	      // Randomly choose next action every 8-10th step
+	      if (this.policySteps % (10 - Math.floor(Math.random() * 2)) == 0) {
+	        this.policySteps = 0;
+	        this.randomPolicy();
 	        return;
 	      }
+
+	      // Reset lookup table (necessary?)
+	      for (var a = 0; a < _constants2.default.BOARD_LENGTH; a++) {
+	        for (var b = 0; b < _constants2.default.BOARD_LENGTH; b++) {
+	          this.squares[keyFromPosition([a, b])].score = null;
+	          this.squares[keyFromPosition([a, b])].steps = null;
+	        }
+	      }
+
+	      // keyFromPosition
+	      // positionfromKey
+
 
 	      var iterations = 0;
-	      var possible = [];
-	      var seen = [];
-	      var currentSquare = {
-	        pos: _this.pos,
-	        steps: 0
-	      };
-	      currentSquare['score'] = getManhattanDistance(currentSquare, _this.target);
-	      var getNextSquares = getNextSquaresFactory(_this.board, seen, _this.target);
+	      var possible = new Set();
+	      var seen = new Set();
+
+	      var current = keyFromPosition(this.pos);
+	      var target = keyFromPosition(this.target.pos);
+	      this.squares[current].steps = 0;
+	      this.squares[current].score = _base2.default.getManhattanDistance(this.pos, this.target);
 
 	      // Find a square with the shortest distance to the target
-	      while (!samePosition(currentSquare, _this.target)) {
-	        // Add current square to list of seen squares
-	        seen.push(currentSquare);
-
-	        // Remove the current square from possible choices
-	        possible = possible.filter(function (s) {
-	          return !samePosition(s, currentSquare);
-	        });
+	      while (current !== target) {
+	        seen.add(current);
+	        possible.delete(current);
 
 	        // Find the new squares reachable from current square
-	        // and then add them to the list of possible squares
-	        getNextSquares(currentSquare).forEach(function (square) {
-	          return possible.push(square);
-	        });
+	        // and then add them to the set of possible squares
+	        var currentPos = positionfromKey(positionfromKey);
+	        var actions = board.getActions(currentPos[0], currentPos[1]);
+	        var _iteratorNormalCompletion = true;
+	        var _didIteratorError = false;
+	        var _iteratorError = undefined;
 
-	        if (possible.length < 1) {
-	          console.error('Cannot reach target: ', _this.target);
-	          _this.board.reset();
+	        try {
+	          for (var _iterator = actions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	            var action = _step.value;
+
+	            var actionPos = _base2.default.getNewPosition(action, currentPos);
+	            var actionKey = keyFromPosition(actionPos);
+	            if (seen.has(actionKey)) continue;
+	            this.squares[actionKey].steps = this.squares[current].steps + 1;
+	            this.squares[actionKey].score = this.squares[actionKey].steps + _base2.default.getManhattanDistance(actionPos, this.target.pos);
+	            possible.add(actionKey);
+	          }
+	        } catch (err) {
+	          _didIteratorError = true;
+	          _iteratorError = err;
+	        } finally {
+	          try {
+	            if (!_iteratorNormalCompletion && _iterator.return) {
+	              _iterator.return();
+	            }
+	          } finally {
+	            if (_didIteratorError) {
+	              throw _iteratorError;
+	            }
+	          }
+	        }
+
+	        if (possible.size < 1) {
+	          console.error('Cannot reach target: ', this.target);
+	          this.board.reset();
 	          return;
 	        }
 
 	        // Select possible square with the fewest steps
+	        var best = void 0;
+	        possible.forEach;
 	        currentSquare = possible.reduce(selectFewestSteps);
 
 	        // Break loop if we have done too many iterations
 	        iterations++;
 	        if (iterations > 5000) {
-	          console.error('Too many iterations trying to reach square: ', _this.target);
-	          _this.board.reset();
+	          console.error('Too many iterations trying to reach square: ', this.target);
+	          this.board.reset();
 	          return;
 	        }
 	      }
@@ -721,46 +805,35 @@
 	        currentSquare = seen
 	        // Find seen squares that are 1 distance from the current square
 	        .filter(function (square) {
-	          return getManhattanDistance(square, currentSquare) === 1;
+	          return _base2.default.getManhattanDistance(square, currentSquare) === 1;
 	        })
 	        // Select the one with the lowest steps
 	        .reduce(selectFewestSteps);
 	      }
 	      if (currentSquare) {
-	        _this.nextAction = chooseAction(_this, currentSquare);
+	        this.nextAction = _base2.default.getActionFromPositions(this.pos, currentSquare.pos);
 	      }
-	    };
-
-	    _this.policySteps = 0;
-	    return _this;
-	  }
+	    }
+	  }, {
+	    key: 'randomPolicy',
+	    value: function randomPolicy() {
+	      var actions = this.getActions();
+	      var action = actions[Math.floor(Math.random() * actions.length)];
+	      this.nextAction = action;
+	    }
+	  }]);
 
 	  return AStarActor;
 	}(_base2.default);
 
-	// Get the 'Manhatten distance' between 2 squares
-
-
 	exports.default = AStarActor;
-	var getManhattanDistance = function getManhattanDistance(sqA, sqB) {
-	  return Math.abs(sqA.pos[0] - sqB.pos[0]) + Math.abs(sqA.pos[1] - sqB.pos[1]);
-	};
 
-	// Get next possible unseen squares from the current square
-	var getNextSquaresFactory = function getNextSquaresFactory(board, seen, target) {
-	  return function (currentSquare) {
-	    return board.getActions(currentSquare.pos[0], currentSquare.pos[1]).map(actionsToAdjacentSquares(currentSquare)).filter(function (square) {
-	      return !seen.some(function (seenSquare) {
-	        return samePosition(seenSquare, square);
-	      });
-	    }).map(function (square) {
-	      return {
-	        pos: square.pos,
-	        steps: currentSquare.steps + 1,
-	        score: currentSquare.steps + 1 + getManhattanDistance(square, target)
-	      };
-	    });
-	  };
+
+	var keyFromPosition = function keyFromPosition(pos) {
+	  return pos[0] * 100 + pos[1];
+	};
+	var positionfromKey = function positionfromKey(key) {
+	  return [(key - key % 100) / 100, key % 100];
 	};
 
 	var sameRow = function sameRow(sqA, sqB) {
@@ -779,31 +852,8 @@
 	  return oldSquare.steps < newSquare.steps ? oldSquare : newSquare;
 	};
 
-	// Maps an action (NORTH / SOUTH / EAST / WEST)
-	// into a square that is next to 'square'
-	var actionsToAdjacentSquares = function actionsToAdjacentSquares(square) {
-	  return function (action) {
-	    return {
-	      pos: [square.pos[0] + _constants2.default.VECTORS[action][0], square.pos[1] + _constants2.default.VECTORS[action][1]]
-	    };
-	  };
-	};
-
-	var chooseAction = function chooseAction(start, chosen) {
-	  if (chosen.pos[0] === start.pos[0] + 1 && chosen.pos[1] === start.pos[1]) {
-	    return _constants2.default.ACTIONS.SOUTH;
-	  } else if (chosen.pos[0] === start.pos[0] - 1 && chosen.pos[1] === start.pos[1]) {
-	    return _constants2.default.ACTIONS.NORTH;
-	  } else if (chosen.pos[0] === start.pos[0] && chosen.pos[1] === start.pos[1] + 1) {
-	    return _constants2.default.ACTIONS.EAST;
-	  } else if (chosen.pos[0] === start.pos[0] && chosen.pos[1] === start.pos[1] - 1) {
-	    return _constants2.default.ACTIONS.WEST;
-	  }
-	  return null;
-	};
-
 /***/ }),
-/* 10 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -820,7 +870,7 @@
 
 	var _constants2 = _interopRequireDefault(_constants);
 
-	var _base = __webpack_require__(7);
+	var _base = __webpack_require__(5);
 
 	var _base2 = _interopRequireDefault(_base);
 
@@ -838,84 +888,10 @@
 	var TemporalDifferenceActor = function (_Actor) {
 	  _inherits(TemporalDifferenceActor, _Actor);
 
-	  function TemporalDifferenceActor(value, board) {
+	  function TemporalDifferenceActor(name, value, board) {
 	    _classCallCheck(this, TemporalDifferenceActor);
 
-	    var _this = _possibleConstructorReturn(this, (TemporalDifferenceActor.__proto__ || Object.getPrototypeOf(TemporalDifferenceActor)).call(this, value, board));
-
-	    _this.addTarget = function (target) {
-	      _this.target = target;
-	    };
-
-	    _this.runPolicy = function () {
-	      // Reward the chicken for surviving, and punish it for being too close
-	      var reward = void 0;
-	      var distance = getManhattanDistance(_this, _this.target);
-	      if (distance < 4) {
-	        reward = -1;
-	      } else {
-	        reward = 1;
-	      }
-	      _this.totalReward += reward;
-
-	      if (_this.totalReward % 100 == 0) {
-	        console.log(_this.totalReward);
-	      }
-
-	      // Using the current value function, greedily choose where we're going to go next
-	      var actions = _this.getActions();
-	      actions.push(null); // Give the actor the option of not moving
-	      var bestAction = null;
-	      var bestValue = Number.NEGATIVE_INFINITY;
-	      var newPosition = _this.pos;
-	      var _iteratorNormalCompletion = true;
-	      var _didIteratorError = false;
-	      var _iteratorError = undefined;
-
-	      try {
-	        for (var _iterator = actions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	          var action = _step.value;
-
-	          var actionPosition = void 0;
-	          if (action) {
-	            actionPosition = [_this.pos[0] + _constants2.default.VECTORS[action][0], _this.pos[1] + _constants2.default.VECTORS[action][1]];
-	          } else {
-	            actionPosition = _this.pos;
-	          }
-	          var actionValue = _this.getValue(actionPosition);
-
-	          if (actionValue > bestValue) {
-	            bestValue = actionValue;
-	            bestAction = action;
-	            newPosition = actionPosition;
-	          }
-	        }
-	      } catch (err) {
-	        _didIteratorError = true;
-	        _iteratorError = err;
-	      } finally {
-	        try {
-	          if (!_iteratorNormalCompletion && _iterator.return) {
-	            _iterator.return();
-	          }
-	        } finally {
-	          if (_didIteratorError) {
-	            throw _iteratorError;
-	          }
-	        }
-	      }
-
-	      _this.nextAction = bestAction;
-
-	      // Using the expected value of our next move, update the value function
-	      // with the temporal difference algorithm
-	      var currentValue = _this.getValue(_this.pos);
-	      var expectedValue = _this.getValue(newPosition);
-	      var targetValue = reward + GAMMA * expectedValue;
-	      var error = targetValue - currentValue;
-	      var newValue = currentValue + ALPHA * error;
-	      _this.setValue(newValue);
-	    };
+	    var _this = _possibleConstructorReturn(this, (TemporalDifferenceActor.__proto__ || Object.getPrototypeOf(TemporalDifferenceActor)).call(this, name, value, board));
 
 	    _this.getValue = function (pos) {
 	      return _this.values[pos[0]][pos[1]][_this.target.pos[0]][_this.target.pos[1]];
@@ -926,7 +902,6 @@
 	    };
 
 	    _this.values = {};
-	    _this.totalReward = 0;
 	    var grid = _this.board.grid;
 	    // Initialize value of all states to 0
 	    for (var a = 0; a < grid.length; a++) {
@@ -957,24 +932,95 @@
 	  }
 
 	  _createClass(TemporalDifferenceActor, [{
-	    key: 'reset',
-	    value: function reset() {
-	      _get(TemporalDifferenceActor.prototype.__proto__ || Object.getPrototypeOf(TemporalDifferenceActor.prototype), 'reset', this).call(this);
-	      console.log(this.totalReward);
-	      this.totalReward = 0;
+	    key: 'getReward',
+	    value: function getReward() {
+	      // Reward the chicken for surviving, and punish it for being too close
+	      var distance = _base2.default.getManhattanDistance(this, this.target);
+	      if (distance < 4) {
+	        return -1;
+	      } else {
+	        return 1;
+	      }
 	    }
+	  }, {
+	    key: 'timestep',
+	    value: function timestep() {
+	      // Perform all actions for this timestep
+	      _get(TemporalDifferenceActor.prototype.__proto__ || Object.getPrototypeOf(TemporalDifferenceActor.prototype), 'timestep', this).call(this);
+
+	      // Using the current value function, greedily choose where we're going to go next
+	      var bestAction = null;
+	      var bestValue = Number.NEGATIVE_INFINITY;
+	      var newPosition = this.pos;
+
+	      // Evaluate all possible actions
+	      var actions = this.getActions();
+	      actions.push(null); // Give the actor the option of not moving
+	      var _iteratorNormalCompletion = true;
+	      var _didIteratorError = false;
+	      var _iteratorError = undefined;
+
+	      try {
+	        for (var _iterator = actions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          var action = _step.value;
+
+	          // Find the actor's new position given the action
+	          var actionPosition = void 0;
+	          if (action) {
+	            actionPosition = _base2.default.getNewPosition(action, this.pos);
+	          } else {
+	            actionPosition = this.pos;
+	          }
+
+	          // If this new action is more valuable than our best option, choose that
+	          var actionValue = this.getValue(actionPosition);
+	          if (actionValue > bestValue) {
+	            bestValue = actionValue;
+	            bestAction = action;
+	            newPosition = actionPosition;
+	          }
+	        }
+
+	        // Perform the best known action
+	      } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion && _iterator.return) {
+	            _iterator.return();
+	          }
+	        } finally {
+	          if (_didIteratorError) {
+	            throw _iteratorError;
+	          }
+	        }
+	      }
+
+	      this.nextAction = bestAction;
+
+	      // Using the expected value of our next move, update the value function
+	      // with the temporal difference algorithm
+	      var reward = this.getReward();
+	      var currentValue = this.getValue(this.pos);
+	      var expectedValue = this.getValue(newPosition);
+	      var targetValue = reward + GAMMA * expectedValue;
+	      var error = targetValue - currentValue;
+	      var newValue = currentValue + ALPHA * error;
+	      this.setValue(newValue);
+	    }
+
+	    // Get the value of the state with target position and 'pos'
+
+
+	    // Set the value of the state with target position and current actor position
+
 	  }]);
 
 	  return TemporalDifferenceActor;
 	}(_base2.default);
 
-	// Get the 'Manhatten distance' between 2 actors
-
-
 	exports.default = TemporalDifferenceActor;
-	var getManhattanDistance = function getManhattanDistance(actorA, actorB) {
-	  return Math.abs(actorA.pos[0] - actorB.pos[0]) + Math.abs(actorA.pos[1] - actorB.pos[1]);
-	};
 
 /***/ })
 /******/ ]);

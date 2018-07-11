@@ -1,24 +1,12 @@
 # Chicken Game
 
-Ideas
-
-* fox speeds up over time
-* multiple foxes
-* end goal to win
-* trees mutate / shift
-* timer
-* death screen
-
-Issues
-
-* fox jumps through trees occasionally
-* tree maze is too random
-
 # To do
 
-create fox policy
+game board
 
-- A* pathing
+- show chicken / fox performance
+- allow training to do 1000s of iterations without rendering
+- set breakpoint for N iterations to prevent infinite games
 
 create chicken policy
 

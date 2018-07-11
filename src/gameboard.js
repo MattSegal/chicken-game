@@ -36,7 +36,7 @@ export default class GameBoard {
 
   moveActors = () => {
     for (let actor of this.actors) {
-      actor.runPolicy()
+      actor.timestep()
       const action = actor.nextAction
       actor.nextAction = null
       if (action) {
@@ -71,6 +71,7 @@ export default class GameBoard {
     this.timerId = setInterval(() => {
       this.moveActors()
       if (samePosition(this.actors[0], this.actors[1])) {
+        // Game over
         this.reset()
       }
     }, C.TICK)
