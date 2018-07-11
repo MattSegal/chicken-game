@@ -6,10 +6,9 @@ const GAMMA = 1
 
 export default class TemporalDifferenceActor extends Actor {
 
-  constructor(value, board) {
-    super(value, board)
+  constructor(name, value, board) {
+    super(name, value, board)
     this.values = {}
-    this.totalReward = 0
     const grid = this.board.grid
     // Initialize value of all states to 0
     for (let a = 0; a < grid.length; a++) {  // chicken row
@@ -34,59 +33,52 @@ export default class TemporalDifferenceActor extends Actor {
     }
   }
 
-  reset() {
-    super.reset()
-    console.log(this.totalReward)
-    this.totalReward = 0
-  }
-
-  addTarget = target => {
-    this.target = target
-  }
-
-  runPolicy = () => {
+  getReward() {
     // Reward the chicken for surviving, and punish it for being too close
-    let reward
-    const distance = getManhattanDistance(this, this.target)
+    const distance = Actor.getManhattanDistance(this, this.target)
     if (distance < 4) {
-      reward = -1
+      return -1
     } else {
-      reward = 1
+      return 1
     }
-    this.totalReward += reward
+  }
 
-    if (this.totalReward % 100 == 0) {
-      console.log(this.totalReward)
-    }
+  timestep() {
+    // Perform all actions for this timestep
+    super.timestep()
 
     // Using the current value function, greedily choose where we're going to go next
-    const actions = this.getActions()
-    actions.push(null) // Give the actor the option of not moving
     let bestAction = null
     let bestValue = Number.NEGATIVE_INFINITY
     let newPosition = this.pos
+
+    // Evaluate all possible actions
+    const actions = this.getActions()
+    actions.push(null) // Give the actor the option of not moving
     for (let action of actions) {
+      // Find the actor's new position given the action
       let actionPosition
       if (action) {
-        actionPosition = [
-          this.pos[0] + C.VECTORS[action][0],
-          this.pos[1] + C.VECTORS[action][1],
-        ]
+        actionPosition = Actor.getNewPosition(action, this.pos)
       } else {
         actionPosition = this.pos
       }
-      const actionValue = this.getValue(actionPosition)
 
+      // If this new action is more valuable than our best option, choose that
+      const actionValue = this.getValue(actionPosition)
       if (actionValue > bestValue) {
         bestValue = actionValue
         bestAction = action
         newPosition = actionPosition
       }
     }
+
+    // Perform the best known action
     this.nextAction = bestAction
 
     // Using the expected value of our next move, update the value function
     // with the temporal difference algorithm
+    const reward = this.getReward()
     const currentValue = this.getValue(this.pos)
     const expectedValue = this.getValue(newPosition)
     const targetValue = reward + GAMMA * expectedValue
@@ -95,13 +87,13 @@ export default class TemporalDifferenceActor extends Actor {
     this.setValue(newValue)
   }
 
+  // Get the value of the state with target position and 'pos'
   getValue = pos => this.values[pos[0]][pos[1]][this.target.pos[0]][this.target.pos[1]]
+
+  // Set the value of the state with target position and current actor position
   setValue = val => {
     this.values[this.pos[0]][this.pos[1]][this.target.pos[0]][this.target.pos[1]] = val
   }
 }
 
 
-// Get the 'Manhatten distance' between 2 actors
-const getManhattanDistance = (actorA, actorB) =>
-  Math.abs(actorA.pos[0] - actorB.pos[0]) + Math.abs(actorA.pos[1] - actorB.pos[1])

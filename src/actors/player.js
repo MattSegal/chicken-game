@@ -14,8 +14,8 @@ const MOVES = {
 // Allows player to control the actor
 export default class PlayerActor extends Actor {
 
-  constructor(value, board) {
-    super(value, board)
+  constructor(name, value, board) {
+    super(name, value, board)
     document.addEventListener('keydown', e => {
       const nextAction = MOVES[e.key] || null
       const actions = this.getActions()
@@ -25,7 +25,7 @@ export default class PlayerActor extends Actor {
     })
   }
 
-  runPolicy = () => {
+  timestep() {
     // Do nothing
   }
 }

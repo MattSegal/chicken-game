@@ -6,63 +6,91 @@ import Actor from './base'
 // Throw in a random move every 10 steps
 export default class AStarActor extends Actor {
 
-  constructor(value, board) {
-    super(value, board)
+  constructor(name, value, board) {
+    super(name, value, board)
     this.policySteps = 0
+
+    // Setup a row + col lookup table that scores all moves on the gameboard
+    this.squares = {}
+    for (let a = 0; a <  C.BOARD_LENGTH; a++) {
+      for (let b = 0; b <  C.BOARD_LENGTH; b++) {
+        this.squares[keyFromPosition([a, b])] = {
+          score: null,
+          steps: null,
+        }
+      }
+    }
   }
 
-  addTarget = target => {
-    this.target = target
-  }
+  setupSquares() {
 
-  randomPolicy = () => {
-    const actions = this.getActions()
-    const action = actions[Math.floor(Math.random() * actions.length)]
-    this.nextAction = action
   }
-
-  runPolicy = () => {
+  timestep() {
+    super.timestep()
     this.policySteps += 1
-    // Do nothing every 2nd step
-    if (this.policySteps % 2 == 0) {
+    // Do nothing every 2nd-3rd step
+    if (this.policySteps % (3 - Math.floor(Math.random() * 1)) == 0) {
       return
     }
-    if (this.policySteps > 10) {
-      // Randomly choose next action
+
+    // Randomly choose next action every 8-10th step
+    if (this.policySteps % (10 - Math.floor(Math.random() * 2)) == 0) {
       this.policySteps = 0
       this.randomPolicy()
       return
     }
 
-    let iterations = 0
-    let possible = []
-    let seen = []
-    let currentSquare = {
-      pos: this.pos,
-      steps: 0
+    // Reset lookup table (necessary?)
+    for (let a = 0; a <  C.BOARD_LENGTH; a++) {
+      for (let b = 0; b <  C.BOARD_LENGTH; b++) {
+        this.squares[keyFromPosition([a, b])].score = null
+        this.squares[keyFromPosition([a, b])].steps = null
+      }
     }
-    currentSquare['score'] = getManhattanDistance(currentSquare, this.target)
-    const getNextSquares = getNextSquaresFactory(this.board, seen, this.target)
+
+    // keyFromPosition
+    // positionfromKey
+
+
+    let iterations = 0
+    let possible = new Set()
+    let seen = new Set()
+
+    let current = keyFromPosition(this.pos)
+    const target = keyFromPosition(this.target.pos)
+    this.squares[current].steps = 0
+    this.squares[current].score = Actor.getManhattanDistance(this.pos, this.target)
 
     // Find a square with the shortest distance to the target
-    while (!samePosition(currentSquare, this.target)) {
-      // Add current square to list of seen squares
-      seen.push(currentSquare)
-
-      // Remove the current square from possible choices
-      possible = possible.filter(s => !samePosition(s, currentSquare))
+    while (current !== target) {
+      seen.add(current)
+      possible.delete(current)
 
       // Find the new squares reachable from current square
-      // and then add them to the list of possible squares
-      getNextSquares(currentSquare).forEach(square => possible.push(square))
+      // and then add them to the set of possible squares
+      const currentPos = positionfromKey(positionfromKey)
+      const actions = board.getActions(currentPos[0], currentPos[1])
+      for (let action of actions) {
+        const actionPos = Actor.getNewPosition(action, currentPos)
+        const actionKey = keyFromPosition(actionPos)
+        if (seen.has(actionKey)) continue
+        this.squares[actionKey].steps = this.squares[current].steps + 1
+        this.squares[actionKey].score = (
+          this.squares[actionKey].steps +
+          Actor.getManhattanDistance(actionPos, this.target.pos)
+        )
+        possible.add(actionKey)
+      }
 
-      if (possible.length < 1) {
+      if (possible.size < 1) {
         console.error('Cannot reach target: ', this.target)
         this.board.reset()
         return
       }
 
       // Select possible square with the fewest steps
+      let best
+      possible.forEach
       currentSquare = possible.reduce(selectFewestSteps)
 
       // Break loop if we have done too many iterations
@@ -78,30 +106,27 @@ export default class AStarActor extends Actor {
     while (currentSquare.steps > 1) {
       currentSquare = seen
         // Find seen squares that are 1 distance from the current square
-        .filter(square => getManhattanDistance(square, currentSquare) === 1)
+        .filter(square => Actor.getManhattanDistance(square, currentSquare) === 1)
         // Select the one with the lowest steps
         .reduce(selectFewestSteps)
     }
     if (currentSquare) {
-      this.nextAction = chooseAction(this, currentSquare)
+      this.nextAction = Actor.getActionFromPositions(this.pos, currentSquare.pos)
     }
+  }
+
+  randomPolicy() {
+    const actions = this.getActions()
+    const action = actions[Math.floor(Math.random() * actions.length)]
+    this.nextAction = action
   }
 }
 
-// Get the 'Manhatten distance' between 2 squares
-const getManhattanDistance = (sqA, sqB) =>
-  Math.abs(sqA.pos[0] - sqB.pos[0]) + Math.abs(sqA.pos[1] - sqB.pos[1])
 
-// Get next possible unseen squares from the current square
-const getNextSquaresFactory = (board, seen, target) => currentSquare =>
-  board.getActions(currentSquare.pos[0], currentSquare.pos[1])
-  .map(actionsToAdjacentSquares(currentSquare))
-  .filter(square => !(seen.some(seenSquare => samePosition(seenSquare, square))))
-  .map(square => ({
-    pos: square.pos,
-    steps: currentSquare.steps + 1,
-    score: currentSquare.steps + 1 + getManhattanDistance(square, target)
-  }))
+const keyFromPosition = (pos) => pos[0] * 100 + pos[1]
+const positionfromKey = (key) => [(key - key % 100) / 100, key % 100]
+
+
 
 const sameRow = (sqA, sqB) =>
   sqA.pos[0] === sqB.pos[0]
@@ -114,26 +139,3 @@ const samePosition = (sqA, sqB) =>
 
 const selectFewestSteps = (oldSquare, newSquare) =>
   (oldSquare.steps < newSquare.steps) ? oldSquare : newSquare
-
-// Maps an action (NORTH / SOUTH / EAST / WEST)
-// into a square that is next to 'square'
-const actionsToAdjacentSquares = square => action => ({
-  pos: [
-    square.pos[0] + C.VECTORS[action][0],
-    square.pos[1] + C.VECTORS[action][1],
-  ]
-})
-
-
-const chooseAction = (start, chosen) => {
-  if (chosen.pos[0] === start.pos[0] + 1 && chosen.pos[1] === start.pos[1]) {
-    return C.ACTIONS.SOUTH
-  } else if (chosen.pos[0] === start.pos[0] - 1 && chosen.pos[1] === start.pos[1]) {
-    return C.ACTIONS.NORTH
-  } else if (chosen.pos[0] === start.pos[0] && chosen.pos[1] === start.pos[1] + 1) {
-    return C.ACTIONS.EAST
-  } else if (chosen.pos[0] === start.pos[0] && chosen.pos[1] === start.pos[1] - 1) {
-    return C.ACTIONS.WEST
-  }
-  return null
-}
