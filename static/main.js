@@ -50,7 +50,7 @@
 
 	var _constants2 = _interopRequireDefault(_constants);
 
-	var _view = __webpack_require__(2);
+	var _view = __webpack_require__(4);
 
 	var _view2 = _interopRequireDefault(_view);
 
@@ -58,19 +58,19 @@
 
 	var _gameboard2 = _interopRequireDefault(_gameboard);
 
-	var _player = __webpack_require__(4);
+	var _player = __webpack_require__(6);
 
 	var _player2 = _interopRequireDefault(_player);
 
-	var _random = __webpack_require__(6);
+	var _random = __webpack_require__(8);
 
 	var _random2 = _interopRequireDefault(_random);
 
-	var _aStar = __webpack_require__(7);
+	var _aStar = __webpack_require__(9);
 
 	var _aStar2 = _interopRequireDefault(_aStar);
 
-	var _temporalDifference = __webpack_require__(8);
+	var _temporalDifference = __webpack_require__(10);
 
 	var _temporalDifference2 = _interopRequireDefault(_temporalDifference);
 
@@ -132,125 +132,7 @@
 	};
 
 /***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _constants = __webpack_require__(1);
-
-	var _constants2 = _interopRequireDefault(_constants);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var getImage = function getImage(src) {
-	  var img = new Image();
-	  img.src = src;
-	  return img;
-	};
-	var loadImage = function loadImage(img) {
-	  return new Promise(function (fulfill, reject) {
-	    img.onload = function () {
-	      return fulfill(img);
-	    };
-	  });
-	};
-
-	var treeImage = getImage('./static/tree.png');
-	var foxImage = getImage('./static/fox.png');
-	var chickenImage = getImage('./static/chicken.png');
-
-	var canvas = document.getElementById('gameboard');
-	canvas.width = canvas.clientWidth;
-	canvas.height = canvas.clientHeight;
-
-	window.addEventListener('resize', function () {
-	  canvas.width = canvas.clientWidth;
-	  canvas.height = canvas.clientHeight;
-	}, false);
-
-	var ctx = canvas.getContext('2d');
-
-	var View = function () {
-	  function View() {
-	    _classCallCheck(this, View);
-	  }
-
-	  _createClass(View, null, [{
-	    key: 'drawWhenReady',
-	    value: function drawWhenReady(grid) {
-	      View.onImagesLoaded().then(function () {
-	        return View.drawLoop(grid);
-	      });
-	    }
-	  }, {
-	    key: 'drawLoop',
-	    value: function drawLoop(grid) {
-	      View.drawGridSquares(grid);
-	      requestAnimationFrame(function () {
-	        return View.drawLoop(grid);
-	      });
-	    }
-	  }, {
-	    key: 'onImagesLoaded',
-	    value: function onImagesLoaded() {
-	      return Promise.all([loadImage(treeImage), loadImage(foxImage), loadImage(chickenImage)]);
-	    }
-	  }, {
-	    key: 'getSquareLength',
-	    value: function getSquareLength() {
-	      return canvas.width / _constants2.default.BOARD_LENGTH;
-	    }
-	  }, {
-	    key: 'drawGridSquares',
-	    value: function drawGridSquares(grid) {
-	      for (var i = 0; i < grid.length; i++) {
-	        for (var j = 0; j < grid[i].length; j++) {
-	          if (grid[i][j] === _constants2.default.CHICKEN) {
-	            View.drawSprite(chickenImage, i, j);
-	          } else if (grid[i][j] === _constants2.default.FOX) {
-	            View.drawSprite(foxImage, i, j);
-	          } else if (grid[i][j] === _constants2.default.TREE) {
-	            View.drawSprite(treeImage, i, j);
-	          } else {
-	            View.clearSquare(i, j);
-	          }
-	        }
-	      }
-	    }
-	  }, {
-	    key: 'drawSprite',
-	    value: function drawSprite(img, row, col) {
-	      var squareLength = View.getSquareLength();
-	      var x = col * squareLength + _constants2.default.PADDING;
-	      var y = row * squareLength + _constants2.default.PADDING;
-	      var length = squareLength - 2 * _constants2.default.PADDING;
-	      ctx.drawImage(img, 0, 0, _constants2.default.SRC_LENGTH, _constants2.default.SRC_LENGTH, x, y, length, length);
-	    }
-	  }, {
-	    key: 'clearSquare',
-	    value: function clearSquare(row, col) {
-	      var squareLength = View.getSquareLength();
-	      var x = col * squareLength;
-	      var y = row * squareLength;
-	      ctx.clearRect(x, y, squareLength, squareLength);
-	    }
-	  }]);
-
-	  return View;
-	}();
-
-	exports.default = View;
-
-/***/ }),
+/* 2 */,
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -418,7 +300,127 @@
 	  value: true
 	});
 
-	var _base = __webpack_require__(5);
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _constants = __webpack_require__(1);
+
+	var _constants2 = _interopRequireDefault(_constants);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var getImage = function getImage(src) {
+	  var img = new Image();
+	  img.src = src;
+	  return img;
+	};
+	var loadImage = function loadImage(img) {
+	  return new Promise(function (fulfill, reject) {
+	    img.onload = function () {
+	      return fulfill(img);
+	    };
+	  });
+	};
+
+	var treeImage = getImage('./static/tree.png');
+	var foxImage = getImage('./static/fox.png');
+	var chickenImage = getImage('./static/chicken.png');
+
+	var canvas = document.getElementById('gameboard');
+	canvas.width = canvas.clientWidth;
+	canvas.height = canvas.clientHeight;
+
+	window.addEventListener('resize', function () {
+	  canvas.width = canvas.clientWidth;
+	  canvas.height = canvas.clientHeight;
+	}, false);
+
+	var ctx = canvas.getContext('2d');
+
+	var View = function () {
+	  function View() {
+	    _classCallCheck(this, View);
+	  }
+
+	  _createClass(View, null, [{
+	    key: 'drawWhenReady',
+	    value: function drawWhenReady(grid) {
+	      View.onImagesLoaded().then(function () {
+	        return View.drawLoop(grid);
+	      });
+	    }
+	  }, {
+	    key: 'drawLoop',
+	    value: function drawLoop(grid) {
+	      View.drawGridSquares(grid);
+	      requestAnimationFrame(function () {
+	        return View.drawLoop(grid);
+	      });
+	    }
+	  }, {
+	    key: 'onImagesLoaded',
+	    value: function onImagesLoaded() {
+	      return Promise.all([loadImage(treeImage), loadImage(foxImage), loadImage(chickenImage)]);
+	    }
+	  }, {
+	    key: 'getSquareLength',
+	    value: function getSquareLength() {
+	      return canvas.width / _constants2.default.BOARD_LENGTH;
+	    }
+	  }, {
+	    key: 'drawGridSquares',
+	    value: function drawGridSquares(grid) {
+	      for (var i = 0; i < grid.length; i++) {
+	        for (var j = 0; j < grid[i].length; j++) {
+	          if (grid[i][j] === _constants2.default.CHICKEN) {
+	            View.drawSprite(chickenImage, i, j);
+	          } else if (grid[i][j] === _constants2.default.FOX) {
+	            View.drawSprite(foxImage, i, j);
+	          } else if (grid[i][j] === _constants2.default.TREE) {
+	            View.drawSprite(treeImage, i, j);
+	          } else {
+	            View.clearSquare(i, j);
+	          }
+	        }
+	      }
+	    }
+	  }, {
+	    key: 'drawSprite',
+	    value: function drawSprite(img, row, col) {
+	      var squareLength = View.getSquareLength();
+	      var x = col * squareLength + _constants2.default.PADDING;
+	      var y = row * squareLength + _constants2.default.PADDING;
+	      var length = squareLength - 2 * _constants2.default.PADDING;
+	      ctx.drawImage(img, 0, 0, _constants2.default.SRC_LENGTH, _constants2.default.SRC_LENGTH, x, y, length, length);
+	    }
+	  }, {
+	    key: 'clearSquare',
+	    value: function clearSquare(row, col) {
+	      var squareLength = View.getSquareLength();
+	      var x = col * squareLength;
+	      var y = row * squareLength;
+	      ctx.clearRect(x, y, squareLength, squareLength);
+	    }
+	  }]);
+
+	  return View;
+	}();
+
+	exports.default = View;
+
+/***/ }),
+/* 5 */,
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _base = __webpack_require__(7);
 
 	var _base2 = _interopRequireDefault(_base);
 
@@ -470,7 +472,7 @@
 	exports.default = PlayerActor;
 
 /***/ }),
-/* 5 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -538,7 +540,7 @@
 	exports.default = Actor;
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -551,7 +553,7 @@
 
 	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-	var _base = __webpack_require__(5);
+	var _base = __webpack_require__(7);
 
 	var _base2 = _interopRequireDefault(_base);
 
@@ -612,7 +614,7 @@
 	};
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -625,7 +627,7 @@
 
 	var _constants2 = _interopRequireDefault(_constants);
 
-	var _base = __webpack_require__(5);
+	var _base = __webpack_require__(7);
 
 	var _base2 = _interopRequireDefault(_base);
 
@@ -801,7 +803,7 @@
 	};
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -818,7 +820,7 @@
 
 	var _constants2 = _interopRequireDefault(_constants);
 
-	var _base = __webpack_require__(5);
+	var _base = __webpack_require__(7);
 
 	var _base2 = _interopRequireDefault(_base);
 
