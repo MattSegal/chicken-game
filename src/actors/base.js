@@ -44,11 +44,8 @@ export default class Actor {
   }
 
   // Get the 'Manhatten distance' between 2 actors
-  static getManhattanDistance(actorA, actorB) {
-    return (
-      Math.abs(actorA.pos[0] - actorB.pos[0]) +
-      Math.abs(actorA.pos[1] - actorB.pos[1])
-    )
+  static getManhattanDistance(posA, posB) {
+    return Math.abs(posA[0] - posB[0]) + Math.abs(posA[1] - posB[1])
   }
 
   // Get new position given a current position and an action

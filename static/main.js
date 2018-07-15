@@ -89,7 +89,8 @@
 	chicken.addTarget(fox);
 
 	// Run the game
-	board.run();
+	board.runIters(500 * 1000);
+	board.runInterval();
 
 /***/ }),
 /* 1 */
@@ -104,7 +105,7 @@
 	  // Game constants
 	  BOARD_LENGTH: 15, // squares
 	  MAX_LENGTH: 900, // px
-	  TICK: 1, // ms
+	  TICK: 100, // ms
 
 	  ACTIONS: {
 	    NORTH: 'NORTH',
@@ -286,38 +287,6 @@
 	    _this.grid = Array(_constants2.default.BOARD_LENGTH).fill(0).map(fillRow);
 	  };
 
-	  this.reset = function () {
-	    clearInterval(_this.timerId);
-	    var _iteratorNormalCompletion = true;
-	    var _didIteratorError = false;
-	    var _iteratorError = undefined;
-
-	    try {
-	      for (var _iterator = _this.actors[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	        var actor = _step.value;
-
-	        _this.grid[actor.pos[0]][actor.pos[1]] = _constants2.default.EMPTY;
-	        actor.reset();
-	        _this.setActorPosition(actor);
-	      }
-	    } catch (err) {
-	      _didIteratorError = true;
-	      _iteratorError = err;
-	    } finally {
-	      try {
-	        if (!_iteratorNormalCompletion && _iterator.return) {
-	          _iterator.return();
-	        }
-	      } finally {
-	        if (_didIteratorError) {
-	          throw _iteratorError;
-	        }
-	      }
-	    }
-
-	    _this.run();
-	  };
-
 	  this.addActor = function (actor) {
 	    if (!_this.actors.includes(actor)) {
 	      _this.actors.push(actor);
@@ -326,13 +295,13 @@
 	  };
 
 	  this.moveActors = function () {
-	    var _iteratorNormalCompletion2 = true;
-	    var _didIteratorError2 = false;
-	    var _iteratorError2 = undefined;
+	    var _iteratorNormalCompletion = true;
+	    var _didIteratorError = false;
+	    var _iteratorError = undefined;
 
 	    try {
-	      for (var _iterator2 = _this.actors[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	        var actor = _step2.value;
+	      for (var _iterator = _this.actors[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	        var actor = _step.value;
 
 	        actor.timestep();
 	        var action = actor.nextAction;
@@ -345,16 +314,16 @@
 	        }
 	      }
 	    } catch (err) {
-	      _didIteratorError2 = true;
-	      _iteratorError2 = err;
+	      _didIteratorError = true;
+	      _iteratorError = err;
 	    } finally {
 	      try {
-	        if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	          _iterator2.return();
+	        if (!_iteratorNormalCompletion && _iterator.return) {
+	          _iterator.return();
 	        }
 	      } finally {
-	        if (_didIteratorError2) {
-	          throw _iteratorError2;
+	        if (_didIteratorError) {
+	          throw _iteratorError;
 	        }
 	      }
 	    }
@@ -379,19 +348,67 @@
 	    return actions;
 	  };
 
-	  this.run = function () {
+	  this.runInterval = function () {
 	    _this.timerId = setInterval(function () {
-	      _this.moveActors();
-	      if (samePosition(_this.actors[0], _this.actors[1])) {
-	        // Game over
-	        _this.reset();
-	      }
+	      return _this.run(_this.resetInterval);
 	    }, _constants2.default.TICK);
+	  };
+
+	  this.resetInterval = function () {
+	    clearInterval(_this.timerId);
+	    _this.reset();
+	    _this.runInterval();
+	  };
+
+	  this.runIters = function (iters) {
+	    for (var i = 0; i < iters; i++) {
+	      _this.run(_this.reset);
+	    }
+	    console.warn('END');
+	  };
+
+	  this.reset = function () {
+	    var _iteratorNormalCompletion2 = true;
+	    var _didIteratorError2 = false;
+	    var _iteratorError2 = undefined;
+
+	    try {
+	      for (var _iterator2 = _this.actors[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	        var actor = _step2.value;
+
+	        _this.grid[actor.pos[0]][actor.pos[1]] = _constants2.default.EMPTY;
+	        actor.reset();
+	        _this.setActorPosition(actor);
+	      }
+	    } catch (err) {
+	      _didIteratorError2 = true;
+	      _iteratorError2 = err;
+	    } finally {
+	      try {
+	        if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	          _iterator2.return();
+	        }
+	      } finally {
+	        if (_didIteratorError2) {
+	          throw _iteratorError2;
+	        }
+	      }
+	    }
+	  };
+
+	  this.run = function (reset) {
+	    _this.moveActors();
+	    if (samePosition(_this.actors[0], _this.actors[1])) {
+	      // Game over
+	      reset();
+	      _this.numGames++;
+	    }
 	  };
 
 	  this.actors = [];
 	  this.setupGrid();
 	  this.timerId = null;
+	  this.numGames = 0;
 	};
 
 	exports.default = GameBoard;
@@ -554,8 +571,8 @@
 
 
 	    // Get the 'Manhatten distance' between 2 actors
-	    value: function getManhattanDistance(actorA, actorB) {
-	      return Math.abs(actorA.pos[0] - actorB.pos[0]) + Math.abs(actorA.pos[1] - actorB.pos[1]);
+	    value: function getManhattanDistance(posA, posB) {
+	      return Math.abs(posA[0] - posB[0]) + Math.abs(posA[1] - posB[1]);
 	    }
 
 	    // Get new position given a current position and an action
@@ -691,19 +708,13 @@
 	    _this.squares = {};
 	    for (var a = 0; a < _constants2.default.BOARD_LENGTH; a++) {
 	      for (var b = 0; b < _constants2.default.BOARD_LENGTH; b++) {
-	        _this.squares[keyFromPosition([a, b])] = {
-	          score: null,
-	          steps: null
-	        };
+	        _this.squares[keyFromPosition([a, b])] = {};
 	      }
 	    }
 	    return _this;
 	  }
 
 	  _createClass(AStarActor, [{
-	    key: 'setupSquares',
-	    value: function setupSquares() {}
-	  }, {
 	    key: 'timestep',
 	    value: function timestep() {
 	      _get(AStarActor.prototype.__proto__ || Object.getPrototypeOf(AStarActor.prototype), 'timestep', this).call(this);
@@ -720,18 +731,7 @@
 	        return;
 	      }
 
-	      // Reset lookup table (necessary?)
-	      for (var a = 0; a < _constants2.default.BOARD_LENGTH; a++) {
-	        for (var b = 0; b < _constants2.default.BOARD_LENGTH; b++) {
-	          this.squares[keyFromPosition([a, b])].score = null;
-	          this.squares[keyFromPosition([a, b])].steps = null;
-	        }
-	      }
-
-	      // keyFromPosition
-	      // positionfromKey
-
-
+	      // Find shortest path with A* algorithm
 	      var iterations = 0;
 	      var possible = new Set();
 	      var seen = new Set();
@@ -739,7 +739,7 @@
 	      var current = keyFromPosition(this.pos);
 	      var target = keyFromPosition(this.target.pos);
 	      this.squares[current].steps = 0;
-	      this.squares[current].score = _base2.default.getManhattanDistance(this.pos, this.target);
+	      this.squares[current].score = _base2.default.getManhattanDistance(this.pos, this.target.pos);
 
 	      // Find a square with the shortest distance to the target
 	      while (current !== target) {
@@ -748,8 +748,8 @@
 
 	        // Find the new squares reachable from current square
 	        // and then add them to the set of possible squares
-	        var currentPos = positionfromKey(positionfromKey);
-	        var actions = board.getActions(currentPos[0], currentPos[1]);
+	        var currentPos = positionfromKey(current);
+	        var actions = this.board.getActions(currentPos[0], currentPos[1]);
 	        var _iteratorNormalCompletion = true;
 	        var _didIteratorError = false;
 	        var _iteratorError = undefined;
@@ -765,6 +765,8 @@
 	            this.squares[actionKey].score = this.squares[actionKey].steps + _base2.default.getManhattanDistance(actionPos, this.target.pos);
 	            possible.add(actionKey);
 	          }
+
+	          // Ensure that there are possible moves remaining
 	        } catch (err) {
 	          _didIteratorError = true;
 	          _iteratorError = err;
@@ -781,15 +783,43 @@
 	        }
 
 	        if (possible.size < 1) {
-	          console.error('Cannot reach target: ', this.target);
+	          console.warn('Cannot reach target: ', this.target);
 	          this.board.reset();
 	          return;
 	        }
 
-	        // Select possible square with the fewest steps
-	        var best = void 0;
-	        possible.forEach;
-	        currentSquare = possible.reduce(selectFewestSteps);
+	        // Select possible square with the lowest score
+	        var best = null;
+	        var lowestScore = Number.POSITIVE_INFINITY;
+	        var _iteratorNormalCompletion2 = true;
+	        var _didIteratorError2 = false;
+	        var _iteratorError2 = undefined;
+
+	        try {
+	          for (var _iterator2 = possible[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	            var key = _step2.value;
+
+	            if (this.squares[key].score < lowestScore) {
+	              best = key;
+	              lowestScore = this.squares[key].score;
+	            }
+	          }
+	        } catch (err) {
+	          _didIteratorError2 = true;
+	          _iteratorError2 = err;
+	        } finally {
+	          try {
+	            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	              _iterator2.return();
+	            }
+	          } finally {
+	            if (_didIteratorError2) {
+	              throw _iteratorError2;
+	            }
+	          }
+	        }
+
+	        current = best;
 
 	        // Break loop if we have done too many iterations
 	        iterations++;
@@ -801,17 +831,43 @@
 	      }
 
 	      // Backtrack from our current square to find the next move
-	      while (currentSquare.steps > 1) {
-	        currentSquare = seen
-	        // Find seen squares that are 1 distance from the current square
-	        .filter(function (square) {
-	          return _base2.default.getManhattanDistance(square, currentSquare) === 1;
-	        })
-	        // Select the one with the lowest steps
-	        .reduce(selectFewestSteps);
+	      while (this.squares[current].steps > 1) {
+	        var _best = null;
+	        var fewestSteps = Number.POSITIVE_INFINITY;
+	        var _iteratorNormalCompletion3 = true;
+	        var _didIteratorError3 = false;
+	        var _iteratorError3 = undefined;
+
+	        try {
+	          for (var _iterator3 = seen[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	            var _key = _step3.value;
+
+	            var distance = _base2.default.getManhattanDistance(positionfromKey(current), positionfromKey(_key));
+	            if (distance === 1 && this.squares[_key].steps < fewestSteps) {
+	              _best = _key;
+	              fewestSteps = this.squares[_key].steps;
+	            }
+	          }
+	        } catch (err) {
+	          _didIteratorError3 = true;
+	          _iteratorError3 = err;
+	        } finally {
+	          try {
+	            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+	              _iterator3.return();
+	            }
+	          } finally {
+	            if (_didIteratorError3) {
+	              throw _iteratorError3;
+	            }
+	          }
+	        }
+
+	        current = _best;
 	      }
-	      if (currentSquare) {
-	        this.nextAction = _base2.default.getActionFromPositions(this.pos, currentSquare.pos);
+
+	      if (current) {
+	        this.nextAction = _base2.default.getActionFromPositions(this.pos, positionfromKey(current));
 	      }
 	    }
 	  }, {
@@ -846,10 +902,6 @@
 
 	var samePosition = function samePosition(sqA, sqB) {
 	  return sameRow(sqA, sqB) && sameCol(sqA, sqB);
-	};
-
-	var selectFewestSteps = function selectFewestSteps(oldSquare, newSquare) {
-	  return oldSquare.steps < newSquare.steps ? oldSquare : newSquare;
 	};
 
 /***/ }),
@@ -935,7 +987,7 @@
 	    key: 'getReward',
 	    value: function getReward() {
 	      // Reward the chicken for surviving, and punish it for being too close
-	      var distance = _base2.default.getManhattanDistance(this, this.target);
+	      var distance = _base2.default.getManhattanDistance(this.pos, this.target.pos);
 	      if (distance < 4) {
 	        return -1;
 	      } else {
