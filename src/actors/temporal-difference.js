@@ -35,7 +35,7 @@ export default class TemporalDifferenceActor extends Actor {
 
   getReward() {
     // Reward the chicken for surviving, and punish it for being too close
-    const distance = Actor.getManhattanDistance(this, this.target)
+    const distance = Actor.getManhattanDistance(this.pos, this.target.pos)
     if (distance < 4) {
       return -1
     } else {

@@ -11,20 +11,11 @@ export default class GameBoard {
     this.actors = []
     this.setupGrid()
     this.timerId = null
+    this.numGames = 0
   }
 
   setupGrid = () => {
     this.grid = Array(C.BOARD_LENGTH).fill(0).map(fillRow)
-  }
-
-  reset = () => {
-    clearInterval(this.timerId)
-    for (let actor of this.actors) {
-      this.grid[actor.pos[0]][actor.pos[1]] = C.EMPTY
-      actor.reset()
-      this.setActorPosition(actor)
-    }
-    this.run()
   }
 
   addActor = (actor) => {
@@ -67,14 +58,38 @@ export default class GameBoard {
     return actions
   }
 
-  run = () => {
-    this.timerId = setInterval(() => {
+  runInterval = () => {
+    this.timerId = setInterval(() => this.run(this.resetInterval), C.TICK)
+  }
+
+  resetInterval = () => {
+    clearInterval(this.timerId)
+    this.reset()
+    this.runInterval()
+  }
+
+  runIters = iters => {
+    for (let i = 0; i < iters; i++) {
+      this.run(this.reset)
+    }
+    console.warn('END')
+  }
+
+  reset = () => {
+    for (let actor of this.actors) {
+      this.grid[actor.pos[0]][actor.pos[1]] = C.EMPTY
+      actor.reset()
+      this.setActorPosition(actor)
+    }
+  }
+
+  run = reset => {
       this.moveActors()
       if (samePosition(this.actors[0], this.actors[1])) {
         // Game over
-        this.reset()
+        reset()
+        this.numGames++
       }
-    }, C.TICK)
   }
 }
 

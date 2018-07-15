@@ -14,17 +14,11 @@ export default class AStarActor extends Actor {
     this.squares = {}
     for (let a = 0; a <  C.BOARD_LENGTH; a++) {
       for (let b = 0; b <  C.BOARD_LENGTH; b++) {
-        this.squares[keyFromPosition([a, b])] = {
-          score: null,
-          steps: null,
-        }
+        this.squares[keyFromPosition([a, b])] = {}
       }
     }
   }
 
-  setupSquares() {
-
-  }
   timestep() {
     super.timestep()
     this.policySteps += 1
@@ -40,18 +34,7 @@ export default class AStarActor extends Actor {
       return
     }
 
-    // Reset lookup table (necessary?)
-    for (let a = 0; a <  C.BOARD_LENGTH; a++) {
-      for (let b = 0; b <  C.BOARD_LENGTH; b++) {
-        this.squares[keyFromPosition([a, b])].score = null
-        this.squares[keyFromPosition([a, b])].steps = null
-      }
-    }
-
-    // keyFromPosition
-    // positionfromKey
-
-
+    // Find shortest path with A* algorithm
     let iterations = 0
     let possible = new Set()
     let seen = new Set()
@@ -59,7 +42,7 @@ export default class AStarActor extends Actor {
     let current = keyFromPosition(this.pos)
     const target = keyFromPosition(this.target.pos)
     this.squares[current].steps = 0
-    this.squares[current].score = Actor.getManhattanDistance(this.pos, this.target)
+    this.squares[current].score = Actor.getManhattanDistance(this.pos, this.target.pos)
 
     // Find a square with the shortest distance to the target
     while (current !== target) {
@@ -68,8 +51,8 @@ export default class AStarActor extends Actor {
 
       // Find the new squares reachable from current square
       // and then add them to the set of possible squares
-      const currentPos = positionfromKey(positionfromKey)
-      const actions = board.getActions(currentPos[0], currentPos[1])
+      const currentPos = positionfromKey(current)
+      const actions = this.board.getActions(currentPos[0], currentPos[1])
       for (let action of actions) {
         const actionPos = Actor.getNewPosition(action, currentPos)
         const actionKey = keyFromPosition(actionPos)
@@ -82,16 +65,24 @@ export default class AStarActor extends Actor {
         possible.add(actionKey)
       }
 
+      // Ensure that there are possible moves remaining
       if (possible.size < 1) {
-        console.error('Cannot reach target: ', this.target)
+        console.warn('Cannot reach target: ', this.target)
         this.board.reset()
         return
       }
 
-      // Select possible square with the fewest steps
-      let best
-      possible.forEach
-      currentSquare = possible.reduce(selectFewestSteps)
+      // Select possible square with the lowest score
+      let best = null
+      let lowestScore = Number.POSITIVE_INFINITY
+      for (let key of possible) {
+        if (this.squares[key].score < lowestScore) {
+          best = key
+          lowestScore = this.squares[key].score
+        }
+      }
+      current = best
+
 
       // Break loop if we have done too many iterations
       iterations++
@@ -103,15 +94,21 @@ export default class AStarActor extends Actor {
     }
 
     // Backtrack from our current square to find the next move
-    while (currentSquare.steps > 1) {
-      currentSquare = seen
-        // Find seen squares that are 1 distance from the current square
-        .filter(square => Actor.getManhattanDistance(square, currentSquare) === 1)
-        // Select the one with the lowest steps
-        .reduce(selectFewestSteps)
+    while (this.squares[current].steps > 1) {
+      let best = null
+      let fewestSteps = Number.POSITIVE_INFINITY
+      for (let key of seen) {
+        const distance = Actor.getManhattanDistance(positionfromKey(current), positionfromKey(key))
+        if (distance === 1 && this.squares[key].steps < fewestSteps) {
+          best = key
+          fewestSteps = this.squares[key].steps
+        }
+      }
+      current = best
     }
-    if (currentSquare) {
-      this.nextAction = Actor.getActionFromPositions(this.pos, currentSquare.pos)
+
+    if (current) {
+      this.nextAction = Actor.getActionFromPositions(this.pos, positionfromKey(current))
     }
   }
 
@@ -137,5 +134,3 @@ const sameCol = (sqA, sqB) =>
 const samePosition = (sqA, sqB) =>
   sameRow(sqA, sqB) && sameCol(sqA, sqB)
 
-const selectFewestSteps = (oldSquare, newSquare) =>
-  (oldSquare.steps < newSquare.steps) ? oldSquare : newSquare

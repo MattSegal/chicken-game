@@ -20,4 +20,5 @@ fox.addTarget(chicken)
 chicken.addTarget(fox)
 
 // Run the game
-board.run()
+board.runIters(500 * 1000)
+board.runInterval()

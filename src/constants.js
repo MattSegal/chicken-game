@@ -3,7 +3,7 @@ export default {
   // Game constants
   BOARD_LENGTH: 15, // squares
   MAX_LENGTH: 900,  // px
-  TICK: 1,  // ms
+  TICK: 100,  // ms
 
   ACTIONS: {
     NORTH: 'NORTH',
