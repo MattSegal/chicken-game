@@ -24,7 +24,7 @@ export default class Actor {
     return 0
   }
 
-  addTarget = target => {
+  setTarget = target => {
     this.target = target
   }
 
@@ -36,7 +36,7 @@ export default class Actor {
         isEmpty = true
       }
     }
-    this.board.addActor(this)
+    this.board.setActorPosition(this)
   }
 
   getActions = () => {

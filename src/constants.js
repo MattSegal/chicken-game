@@ -1,9 +1,11 @@
 
 export default {
   // Game constants
-  BOARD_LENGTH: 15, // squares
+  BOARD_LENGTH: 18, // squares
   MAX_LENGTH: 900,  // px
   TICK: 100,  // ms
+  TRAINING_STEPS: 1000 * 1000, // 10e6 steps
+  LOGGING: false,
 
   ACTIONS: {
     NORTH: 'NORTH',

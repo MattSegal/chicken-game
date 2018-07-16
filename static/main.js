@@ -46,10 +46,6 @@
 
 	'use strict';
 
-	var _constants = __webpack_require__(1);
-
-	var _constants2 = _interopRequireDefault(_constants);
-
 	var _view = __webpack_require__(2);
 
 	var _view2 = _interopRequireDefault(_view);
@@ -58,21 +54,9 @@
 
 	var _gameboard2 = _interopRequireDefault(_gameboard);
 
-	var _player = __webpack_require__(4);
+	var _controls = __webpack_require__(10);
 
-	var _player2 = _interopRequireDefault(_player);
-
-	var _random = __webpack_require__(6);
-
-	var _random2 = _interopRequireDefault(_random);
-
-	var _aStar = __webpack_require__(7);
-
-	var _aStar2 = _interopRequireDefault(_aStar);
-
-	var _temporalDifference = __webpack_require__(8);
-
-	var _temporalDifference2 = _interopRequireDefault(_temporalDifference);
+	var _controls2 = _interopRequireDefault(_controls);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -82,15 +66,8 @@
 	// Draw grid
 	_view2.default.drawWhenReady(board.grid);
 
-	// Create actors
-	var chicken = new _temporalDifference2.default('chicken', _constants2.default.CHICKEN, board);
-	var fox = new _aStar2.default('fox', _constants2.default.FOX, board);
-	fox.addTarget(chicken);
-	chicken.addTarget(fox);
-
-	// Run the game
-	board.runIters(500 * 1000);
-	board.runInterval();
+	// Hook up controls
+	new _controls2.default(board);
 
 /***/ }),
 /* 1 */
@@ -103,9 +80,11 @@
 	});
 	exports.default = {
 	  // Game constants
-	  BOARD_LENGTH: 15, // squares
+	  BOARD_LENGTH: 18, // squares
 	  MAX_LENGTH: 900, // px
 	  TICK: 100, // ms
+	  TRAINING_STEPS: 1000 * 1000, // 10e6 steps
+	  LOGGING: false,
 
 	  ACTIONS: {
 	    NORTH: 'NORTH',
@@ -287,44 +266,43 @@
 	    _this.grid = Array(_constants2.default.BOARD_LENGTH).fill(0).map(fillRow);
 	  };
 
-	  this.addActor = function (actor) {
-	    if (!_this.actors.includes(actor)) {
-	      _this.actors.push(actor);
-	      _this.setActorPosition(actor);
+	  this.addFox = function (actor) {
+	    if (_this.fox) {
+	      _this.clearPosition(_this.fox.pos);
+	    }
+	    _this.fox = actor;
+	    _this.setActorPosition(actor);
+	    if (_this.fox && _this.chicken) {
+	      _this.fox.setTarget(_this.chicken);
+	      _this.chicken.setTarget(_this.fox);
+	    }
+	  };
+
+	  this.addChicken = function (actor) {
+	    if (_this.chicken) {
+	      _this.clearPosition(_this.chicken.pos);
+	    }
+	    _this.chicken = actor;
+	    _this.setActorPosition(actor);
+	    if (_this.fox && _this.chicken) {
+	      _this.fox.setTarget(_this.chicken);
+	      _this.chicken.setTarget(_this.fox);
 	    }
 	  };
 
 	  this.moveActors = function () {
-	    var _iteratorNormalCompletion = true;
-	    var _didIteratorError = false;
-	    var _iteratorError = undefined;
+	    var _arr = [_this.fox, _this.chicken];
 
-	    try {
-	      for (var _iterator = _this.actors[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	        var actor = _step.value;
-
-	        actor.timestep();
-	        var action = actor.nextAction;
-	        actor.nextAction = null;
-	        if (action) {
-	          _this.clearPosition(actor.pos);
-	          actor.pos[0] += _constants2.default.VECTORS[action][0];
-	          actor.pos[1] += _constants2.default.VECTORS[action][1];
-	          _this.setActorPosition(actor);
-	        }
-	      }
-	    } catch (err) {
-	      _didIteratorError = true;
-	      _iteratorError = err;
-	    } finally {
-	      try {
-	        if (!_iteratorNormalCompletion && _iterator.return) {
-	          _iterator.return();
-	        }
-	      } finally {
-	        if (_didIteratorError) {
-	          throw _iteratorError;
-	        }
+	    for (var _i = 0; _i < _arr.length; _i++) {
+	      var actor = _arr[_i];
+	      actor.timestep();
+	      var action = actor.nextAction;
+	      actor.nextAction = null;
+	      if (action) {
+	        _this.clearPosition(actor.pos);
+	        actor.pos[0] += _constants2.default.VECTORS[action][0];
+	        actor.pos[1] += _constants2.default.VECTORS[action][1];
+	        _this.setActorPosition(actor);
 	      }
 	    }
 	  };
@@ -361,51 +339,34 @@
 	  };
 
 	  this.runIters = function (iters) {
+	    clearInterval(_this.timerId);
 	    for (var i = 0; i < iters; i++) {
 	      _this.run(_this.reset);
 	    }
-	    console.warn('END');
 	  };
 
 	  this.reset = function () {
-	    var _iteratorNormalCompletion2 = true;
-	    var _didIteratorError2 = false;
-	    var _iteratorError2 = undefined;
+	    var _arr2 = [_this.fox, _this.chicken];
 
-	    try {
-	      for (var _iterator2 = _this.actors[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	        var actor = _step2.value;
-
-	        _this.grid[actor.pos[0]][actor.pos[1]] = _constants2.default.EMPTY;
-	        actor.reset();
-	        _this.setActorPosition(actor);
-	      }
-	    } catch (err) {
-	      _didIteratorError2 = true;
-	      _iteratorError2 = err;
-	    } finally {
-	      try {
-	        if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	          _iterator2.return();
-	        }
-	      } finally {
-	        if (_didIteratorError2) {
-	          throw _iteratorError2;
-	        }
-	      }
+	    for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
+	      var actor = _arr2[_i2];
+	      _this.grid[actor.pos[0]][actor.pos[1]] = _constants2.default.EMPTY;
+	      actor.reset();
+	      _this.setActorPosition(actor);
 	    }
 	  };
 
 	  this.run = function (reset) {
 	    _this.moveActors();
-	    if (samePosition(_this.actors[0], _this.actors[1])) {
+	    if (distance(_this.fox, _this.chicken) < 2) {
 	      // Game over
 	      reset();
 	      _this.numGames++;
 	    }
 	  };
 
-	  this.actors = [];
+	  this.fox = null;
+	  this.chicken = null;
 	  this.setupGrid();
 	  this.timerId = null;
 	  this.numGames = 0;
@@ -424,6 +385,10 @@
 
 	var samePosition = function samePosition(sqA, sqB) {
 	  return sameRow(sqA, sqB) && sameCol(sqA, sqB);
+	};
+
+	var distance = function distance(sqA, sqB) {
+	  return Math.abs(sqA.pos[0] - sqB.pos[0]) + Math.abs(sqA.pos[1] - sqB.pos[1]);
 	};
 
 /***/ }),
@@ -527,7 +492,7 @@
 
 	    _classCallCheck(this, Actor);
 
-	    this.addTarget = function (target) {
+	    this.setTarget = function (target) {
 	      _this.target = target;
 	    };
 
@@ -564,7 +529,7 @@
 	          isEmpty = true;
 	        }
 	      }
-	      this.board.addActor(this);
+	      this.board.setActorPosition(this);
 	    }
 	  }], [{
 	    key: 'getManhattanDistance',
@@ -719,10 +684,7 @@
 	    value: function timestep() {
 	      _get(AStarActor.prototype.__proto__ || Object.getPrototypeOf(AStarActor.prototype), 'timestep', this).call(this);
 	      this.policySteps += 1;
-	      // Do nothing every 2nd-3rd step
-	      if (this.policySteps % (3 - Math.floor(Math.random() * 1)) == 0) {
-	        return;
-	      }
+	      if (this.policySteps % 2 == 0) return;
 
 	      // Randomly choose next action every 8-10th step
 	      if (this.policySteps % (10 - Math.floor(Math.random() * 2)) == 0) {
@@ -783,7 +745,7 @@
 	        }
 
 	        if (possible.size < 1) {
-	          console.warn('Cannot reach target: ', this.target);
+	          _constants2.default.LOGGING && console.warn('Cannot reach target: ', this.target);
 	          this.board.reset();
 	          return;
 	        }
@@ -824,7 +786,7 @@
 	        // Break loop if we have done too many iterations
 	        iterations++;
 	        if (iterations > 5000) {
-	          console.error('Too many iterations trying to reach square: ', this.target);
+	          _constants2.default.LOGGING && console.error('Too many iterations trying to reach square: ', this.target);
 	          this.board.reset();
 	          return;
 	        }
@@ -1073,6 +1035,264 @@
 	}(_base2.default);
 
 	exports.default = TemporalDifferenceActor;
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+	var _OPPOSITE;
+
+	var _constants = __webpack_require__(1);
+
+	var _constants2 = _interopRequireDefault(_constants);
+
+	var _base = __webpack_require__(5);
+
+	var _base2 = _interopRequireDefault(_base);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+	var OPPOSITE = (_OPPOSITE = {}, _defineProperty(_OPPOSITE, _constants2.default.ACTIONS.NORTH, _constants2.default.ACTIONS.SOUTH), _defineProperty(_OPPOSITE, _constants2.default.ACTIONS.SOUTH, _constants2.default.ACTIONS.NORTH), _defineProperty(_OPPOSITE, _constants2.default.ACTIONS.EAST, _constants2.default.ACTIONS.WEST), _defineProperty(_OPPOSITE, _constants2.default.ACTIONS.WEST, _constants2.default.ACTIONS.EAST), _OPPOSITE);
+
+	var GreedyActor = function (_Actor) {
+	  _inherits(GreedyActor, _Actor);
+
+	  function GreedyActor(name, value, board) {
+	    _classCallCheck(this, GreedyActor);
+
+	    var _this = _possibleConstructorReturn(this, (GreedyActor.__proto__ || Object.getPrototypeOf(GreedyActor)).call(this, name, value, board));
+
+	    _this.isFollowing = true;
+	    return _this;
+	  }
+
+	  _createClass(GreedyActor, [{
+	    key: 'flee',
+	    value: function flee() {
+	      this.isFollowing = false;
+	      return this;
+	    }
+	  }, {
+	    key: 'follow',
+	    value: function follow() {
+	      this.isFollowing = true;
+	      return this;
+	    }
+	  }, {
+	    key: 'timestep',
+	    value: function timestep() {
+	      _get(GreedyActor.prototype.__proto__ || Object.getPrototypeOf(GreedyActor.prototype), 'timestep', this).call(this);
+	      var row = this.pos[0];
+	      var col = this.pos[1];
+	      var targetRow = this.target.pos[0];
+	      var targetCol = this.target.pos[1];
+
+	      var actions = this.board.getActions(row, col);
+	      var seen = new Set();
+
+	      var chosenAction = null;
+	      var iter = 0;
+	      while (!chosenAction) {
+	        iter++;
+	        if (iter > 100) {
+	          console.warn('GreedyActor is too tired to continue.');
+	          this.board.reset();
+	          return;
+	        }
+	        var action = actions[Math.floor(Math.random() * actions.length)];
+	        var chooseGreedily = action === _constants2.default.ACTIONS.NORTH && row > targetRow || action === _constants2.default.ACTIONS.SOUTH && row < targetRow || action === _constants2.default.ACTIONS.EAST && col < targetCol || action === _constants2.default.ACTIONS.WEST && col > targetCol;
+	        if (chooseGreedily) {
+	          if (this.isFollowing) {
+	            chosenAction = action;
+	          } else if (actions.includes(OPPOSITE[action])) {
+	            chosenAction = OPPOSITE[action];
+	          }
+	        }
+	        seen.add(action);
+	        if (seen.size >= actions.length) {
+	          // Choose a random action if there are no greedy options
+	          chosenAction = action;
+	        }
+	      }
+	      this.nextAction = chosenAction;
+	    }
+	  }]);
+
+	  return GreedyActor;
+	}(_base2.default);
+
+	exports.default = GreedyActor;
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _constants = __webpack_require__(1);
+
+	var _constants2 = _interopRequireDefault(_constants);
+
+	var _player = __webpack_require__(4);
+
+	var _player2 = _interopRequireDefault(_player);
+
+	var _greedy = __webpack_require__(9);
+
+	var _greedy2 = _interopRequireDefault(_greedy);
+
+	var _random = __webpack_require__(6);
+
+	var _random2 = _interopRequireDefault(_random);
+
+	var _aStar = __webpack_require__(7);
+
+	var _aStar2 = _interopRequireDefault(_aStar);
+
+	var _temporalDifference = __webpack_require__(8);
+
+	var _temporalDifference2 = _interopRequireDefault(_temporalDifference);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var trainingOptions = ['temporal difference'];
+
+	var chickenOptions = {
+	  'temporal difference': function temporalDifference(board) {
+	    return new _temporalDifference2.default('chicken', _constants2.default.CHICKEN, board);
+	  },
+	  random: function random(board) {
+	    return new _random2.default('chicken', _constants2.default.CHICKEN, board);
+	  },
+	  'greedy flight': function greedyFlight(board) {
+	    return new _greedy2.default('chicken', _constants2.default.CHICKEN, board).flee();
+	  },
+	  player: function player(board) {
+	    return new _player2.default('chicken', _constants2.default.CHICKEN, board);
+	  }
+	};
+
+	var foxOptions = {
+	  'a* search': function aSearch(board) {
+	    return new _aStar2.default('fox', _constants2.default.FOX, board);
+	  },
+	  random: function random(board) {
+	    return new _random2.default('fox', _constants2.default.FOX, board);
+	  },
+	  'greedy pursuit': function greedyPursuit(board) {
+	    return new _greedy2.default('fox', _constants2.default.FOX, board).follow();
+	  },
+	  player: function player(board) {
+	    return new _player2.default('fox', _constants2.default.FOX, board);
+	  }
+	};
+
+	var Controller = function () {
+	  function Controller(board) {
+	    var _this = this;
+
+	    _classCallCheck(this, Controller);
+
+	    this.onNewGame = function (e) {
+	      return _this.board.reset();
+	    };
+
+	    this.onSelectFox = function (e) {
+	      return _this.board.addFox(foxOptions[e.target.value](_this.board));
+	    };
+
+	    this.onSelectChicken = function (e) {
+	      var key = e.target.value;
+	      _this.board.addChicken(chickenOptions[key](_this.board));
+	      if (trainingOptions.includes(key)) {
+	        _this.trainBtn.removeAttribute('disabled');
+	      } else {
+	        _this.trainBtn.setAttribute('disabled', true);
+	      }
+	    };
+
+	    this.onTrain = function (e) {
+	      _this.board.runIters(_constants2.default.TRAINING_STEPS);
+	      _this.board.reset();
+	      _this.board.runInterval();
+	    };
+
+	    this.board = board;
+	    this.actors = {};
+
+	    board.addFox(foxOptions['a* search'](board));
+	    board.addChicken(chickenOptions['temporal difference'](board));
+
+	    this.node = document.getElementById('controls');
+	    this.buildSelect('chicken algorithm', chickenOptions, this.onSelectChicken);
+	    this.buildSelect('fox algorithm', foxOptions, this.onSelectFox);
+	    this.buildButton('new game', this.onNewGame);
+	    this.trainBtn = this.buildButton('train', this.onTrain);
+	    board.runInterval();
+	  }
+
+	  _createClass(Controller, [{
+	    key: 'buildSelect',
+	    value: function buildSelect(text, options, onChange) {
+	      var select = document.createElement('select');
+	      for (var key in options) {
+	        var option = document.createElement('option');
+	        option.value = key;
+	        option.append(key);
+	        select.appendChild(option);
+	      }
+	      select.onchange = onChange;
+	      var label = document.createElement('label');
+	      label.append(text);
+	      var control = document.createElement('div');
+	      control.classList.add('control');
+	      control.appendChild(label);
+	      control.appendChild(select);
+	      this.node.appendChild(control);
+	      return control;
+	    }
+	  }, {
+	    key: 'buildButton',
+	    value: function buildButton(text, onClick) {
+	      var button = document.createElement('div');
+	      button.classList.add('button');
+	      button.onclick = onClick;
+	      button.append(text);
+	      this.node.appendChild(button);
+	      return button;
+	    }
+	  }]);
+
+	  return Controller;
+	}();
+
+	exports.default = Controller;
 
 /***/ })
 /******/ ]);
