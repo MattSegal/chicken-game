@@ -22,10 +22,7 @@ export default class AStarActor extends Actor {
   timestep() {
     super.timestep()
     this.policySteps += 1
-    // Do nothing every 2nd-3rd step
-    if (this.policySteps % (3 - Math.floor(Math.random() * 1)) == 0) {
-      return
-    }
+    if (this.policySteps % 2 == 0) return
 
     // Randomly choose next action every 8-10th step
     if (this.policySteps % (10 - Math.floor(Math.random() * 2)) == 0) {
@@ -67,7 +64,7 @@ export default class AStarActor extends Actor {
 
       // Ensure that there are possible moves remaining
       if (possible.size < 1) {
-        console.warn('Cannot reach target: ', this.target)
+        C.LOGGING && console.warn('Cannot reach target: ', this.target)
         this.board.reset()
         return
       }
@@ -87,7 +84,7 @@ export default class AStarActor extends Actor {
       // Break loop if we have done too many iterations
       iterations++
       if (iterations > 5000) {
-        console.error('Too many iterations trying to reach square: ', this.target)
+        C.LOGGING && console.error('Too many iterations trying to reach square: ', this.target)
         this.board.reset()
         return
       }

@@ -8,7 +8,8 @@ const fillRow = () => Array(C.BOARD_LENGTH).fill(0).map(fillCol)
 // Game model singleton
 export default class GameBoard {
   constructor() {
-    this.actors = []
+    this.fox = null
+    this.chicken = null
     this.setupGrid()
     this.timerId = null
     this.numGames = 0
@@ -18,15 +19,32 @@ export default class GameBoard {
     this.grid = Array(C.BOARD_LENGTH).fill(0).map(fillRow)
   }
 
-  addActor = (actor) => {
-    if (!this.actors.includes(actor)) {
-      this.actors.push(actor)
-      this.setActorPosition(actor)
+  addFox = actor => {
+    if (this.fox) {
+      this.clearPosition(this.fox.pos)
+    }
+    this.fox = actor
+    this.setActorPosition(actor)
+    if (this.fox && this.chicken) {
+      this.fox.setTarget(this.chicken)
+      this.chicken.setTarget(this.fox)
+    }
+  }
+
+  addChicken = actor => {
+    if (this.chicken) {
+      this.clearPosition(this.chicken.pos)
+    }
+    this.chicken = actor
+    this.setActorPosition(actor)
+    if (this.fox && this.chicken) {
+      this.fox.setTarget(this.chicken)
+      this.chicken.setTarget(this.fox)
     }
   }
 
   moveActors = () => {
-    for (let actor of this.actors) {
+    for (let actor of [this.fox, this.chicken]) {
       actor.timestep()
       const action = actor.nextAction
       actor.nextAction = null
@@ -68,15 +86,15 @@ export default class GameBoard {
     this.runInterval()
   }
 
-  runIters = iters => {
+  runIters = (iters) => {
+    clearInterval(this.timerId)
     for (let i = 0; i < iters; i++) {
       this.run(this.reset)
     }
-    console.warn('END')
   }
 
   reset = () => {
-    for (let actor of this.actors) {
+    for (let actor of [this.fox, this.chicken]) {
       this.grid[actor.pos[0]][actor.pos[1]] = C.EMPTY
       actor.reset()
       this.setActorPosition(actor)
@@ -85,7 +103,7 @@ export default class GameBoard {
 
   run = reset => {
       this.moveActors()
-      if (samePosition(this.actors[0], this.actors[1])) {
+      if (distance(this.fox, this.chicken) < 2) {
         // Game over
         reset()
         this.numGames++
@@ -101,3 +119,7 @@ const sameCol = (sqA, sqB) =>
 
 const samePosition = (sqA, sqB) =>
   sameRow(sqA, sqB) && sameCol(sqA, sqB)
+
+
+const distance = (sqA, sqB) =>
+  Math.abs(sqA.pos[0] - sqB.pos[0]) + Math.abs(sqA.pos[1] - sqB.pos[1])
