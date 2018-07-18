@@ -1,31 +1,38 @@
-const path = require("path")
+const path = require('path')
 const webpack = require('webpack')
 
-const config = {
-    context: path.resolve('./src'),
-    entry: './index',
-    output: {
-        path: path.resolve('./static/'),
-        filename: "[name].js",
-    },
-    module: {
-        loaders: [
-            { 
-                test: /\.jsx?$/, 
-                exclude: /node_modules/, 
-                loader: 'babel-loader', 
-                query: { presets:['react','es2015','stage-2'] }
-                // stage 2 so we can use JS spread operator 
+module.exports = {
+  entry: './src/index',
+  output: {
+      path: path.resolve(__dirname, 'static'),
+      filename: 'main.js',
+  },
+  module: {
+    rules: [
+      {
+        test: /\.(js|jsx)$/,
+        exclude: /node_modules/,
+        use: ['babel-loader']
+      },
+      {
+        test: /\.css$/,
+        use: [
+          'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              modules: true,
+              localIdentName: '[name]__[local]___[hash:base64:5]'
             }
-        ],
-    },
-    resolve: {
-        root: [
-            path.resolve('./src'),
-        ],
-        modulesDirectories: ['node_modules'],
-        extensions: ['', '.js'],
-    },
+          },
+        ]
+      }
+    ]
+  },
+  resolve: {
+    extensions: ['*', '.js', '.jsx'],
+    modules: [
+      path.resolve(__dirname, 'node_modules'),
+    ]
+  },
 }
-
-module.exports = config

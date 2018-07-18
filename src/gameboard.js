@@ -1,65 +1,31 @@
-import C from 'constants'
+import C from './constants'
 
-
-const fillCol = () => Math.random() > C.TREE_DENSITY ? C.EMPTY : C.TREE
-const fillRow = () => Array(C.BOARD_LENGTH).fill(0).map(fillCol)
-
-
-// Game model singleton
+// Game model
 export default class GameBoard {
-  constructor() {
-    this.fox = null
-    this.chicken = null
-    this.setupGrid()
+  constructor(grid) {
+    this.grid = grid
+
+    this.foxActor = null
+    this.chickenActor = null
+    this.foxPosition = this.getRandomPosition()
+    this.chickenPosition = this.getRandomPosition()
+
     this.timerId = null
-    this.numGames = 0
     this.gameIterations = 0
   }
 
-  setupGrid = () => {
-    this.grid = Array(C.BOARD_LENGTH).fill(0).map(fillRow)
-  }
-
   addFox = actor => {
-    if (this.fox) {
-      this.clearPosition(this.fox.pos)
-    }
-    this.fox = actor
-    this.setActorPosition(actor)
-    if (this.fox && this.chicken) {
-      this.fox.setTarget(this.chicken)
-      this.chicken.setTarget(this.fox)
-    }
+    this.foxActor = actor
+    this.setActorPosition(this.foxActor, this.foxPosition)
   }
 
   addChicken = actor => {
-    if (this.chicken) {
-      this.clearPosition(this.chicken.pos)
-    }
-    this.chicken = actor
-    this.setActorPosition(actor)
-    if (this.fox && this.chicken) {
-      this.fox.setTarget(this.chicken)
-      this.chicken.setTarget(this.fox)
-    }
+    this.chickenActor = actor
+    this.setActorPosition(this.chickenActor, this.chickenPosition)
   }
 
-  moveActors = () => {
-    for (let actor of [this.fox, this.chicken]) {
-      actor.timestep()
-      const action = actor.nextAction
-      actor.nextAction = null
-      if (action) {
-        this.clearPosition(actor.pos)
-        actor.pos[0] += C.VECTORS[action][0]
-        actor.pos[1] += C.VECTORS[action][1]
-        this.setActorPosition(actor)
-      }
-    }
-  }
-
-  setActorPosition = (actor) => {
-    this.grid[actor.pos[0]][actor.pos[1]] = actor.value
+  setActorPosition = (actor, position) => {
+    this.grid[position[0]][position[1]] = actor.value
   }
 
   clearPosition = (pos) => {
@@ -75,6 +41,15 @@ export default class GameBoard {
     col > 0 && this.grid[row][col - 1] !== C.TREE && actions.push(C.ACTIONS.WEST)
     col < max && this.grid[row][col + 1] !== C.TREE && actions.push(C.ACTIONS.EAST)
     return actions
+  }
+
+  getRandomPosition = () => {
+    while (true) {
+      const position = [randomScalar(), randomScalar()]
+      if (this.grid[position[0]][position[1]] === C.EMPTY) {
+        return position
+      }
+    }
   }
 
   runInterval = () => {
@@ -97,38 +72,54 @@ export default class GameBoard {
   }
 
   reset = () => {
-    for (let actor of [this.fox, this.chicken]) {
-      this.grid[actor.pos[0]][actor.pos[1]] = C.EMPTY
-      actor.reset()
-      this.setActorPosition(actor)
-    }
+    this.foxActor.endGame()
+    this.chickenActor.endGame()
+
+    this.clearPosition(this.foxPosition)
+    this.clearPosition(this.chickenPosition)
+
+    this.foxPosition = this.getRandomPosition()
+    this.chickenPosition = this.getRandomPosition()
+
+    this.setActorPosition(this.foxActor, this.foxPosition)
+    this.setActorPosition(this.chickenActor, this.chickenPosition)
   }
 
   run = reset => {
+    if (!this.foxActor || !this.chickenActor) return
     this.gameIterations++
-    this.moveActors()
-    const shoudlReset = (
+
+    const previousFoxPosition = [this.foxPosition[0], this.foxPosition[1]]
+    const foxAction = this.foxActor.timestep(this.getActions, reset, this.foxPosition, this.chickenPosition)
+    this.move(this.foxActor, this.foxPosition, foxAction)
+
+    const chickenAction = this.chickenActor.timestep(this.getActions, reset, this.chickenPosition, previousFoxPosition)
+    this.move(this.chickenActor, this.chickenPosition, chickenAction)
+
+    const shouldReset = (
       this.gameIterations >= C.MAX_EPISODE_LENGTH ||
-      distance(this.fox, this.chicken) < 2
+      distance(this.foxPosition, this.chickenPosition) < 2
     )
-    if (shoudlReset) {
+    if (shouldReset) {
       // Game over
       this.gameIterations = 0
       reset()
-      this.numGames++
     }
+  }
+
+  move = (actor, position, action) => {
+    if (!action) return
+    this.clearPosition(position)
+    position[0] += C.VECTORS[action][0]
+    position[1] += C.VECTORS[action][1]
+    this.setActorPosition(actor, position)
   }
 }
 
-const sameRow = (sqA, sqB) =>
-  sqA.pos[0] === sqB.pos[0]
+const samePosition = (posA, posB) =>
+  (posA[0] === posB[0]) && (posA[1] === posB[1])
 
-const sameCol = (sqA, sqB) =>
-  sqA.pos[1] === sqB.pos[1]
+const distance = (posA, posB) =>
+  Math.abs(posA[0] - posB[0]) + Math.abs(posA[1] - posB[1])
 
-const samePosition = (sqA, sqB) =>
-  sameRow(sqA, sqB) && sameCol(sqA, sqB)
-
-
-const distance = (sqA, sqB) =>
-  Math.abs(sqA.pos[0] - sqB.pos[0]) + Math.abs(sqA.pos[1] - sqB.pos[1])
+const randomScalar = () => Math.floor(Math.random() * C.BOARD_LENGTH)

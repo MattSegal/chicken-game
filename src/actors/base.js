@@ -1,22 +1,17 @@
 import C from '../constants'
 
-const randomScalar = () => Math.floor(Math.random() * C.BOARD_LENGTH)
-const randomPosition = () => [randomScalar(), randomScalar()]
-
 
 // Represents the chicken/fox on the game board
 export default class Actor {
-  constructor(name, value, board) {
-    this.name = name
+  constructor(value) {
     this.value = value
-    this.nextAction = null
-    this.board = board
-    this.reset()
+    this.numGames = 0
   }
 
-  timestep() {
+  timestep(getActions, resetGame, position, targetPosition) {
     // Perform all actions for this timestep
     // To be implemented by child class
+    return null
   }
 
   getReward() {
@@ -24,23 +19,9 @@ export default class Actor {
     return 0
   }
 
-  setTarget = target => {
-    this.target = target
-  }
-
-  reset() {
-    let isEmpty = false
-    while (!isEmpty) {
-      this.pos = randomPosition()
-      if (this.board.grid[this.pos[0]][this.pos[1]] === C.EMPTY) {
-        isEmpty = true
-      }
-    }
-    this.board.setActorPosition(this)
-  }
-
-  getActions = () => {
-    return this.board.getActions(this.pos[0], this.pos[1])
+  endGame() {
+    // Do whatever you need to at the end of a game
+    this.numGames++
   }
 
   // Get the 'Manhatten distance' between 2 actors

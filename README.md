@@ -6,16 +6,11 @@ game board
 
 - show chicken / fox performance
 - allow training to do 1000s of iterations without rendering
-- set breakpoint for N iterations to prevent infinite games
 
 create chicken policy
 
-- policy iteration
-- value iteration
-- monte carlo
-- temporal difference
 - TD(lambda)
-- player input policy (?) do this last
+- more RL algorithms?
 
 create visualizations
 
@@ -35,6 +30,7 @@ create performance visualization
 
 add a 'train' button to speed up training for X ticks
 
-
 make actors objects persistent until explicitly reset
 show number of games player per actor
+
+use a web worker to make training non-blocking

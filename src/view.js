@@ -1,4 +1,4 @@
-import C from 'constants'
+import C from './constants'
 
 const getImage =src => {
   const img = new Image();

@@ -3,8 +3,7 @@ import { randomChoice } from './utils'
 
 // Totally random actor
 export default class RandomActor extends Actor {
-  timestep() {
-    super.timestep()
-    this.nextAction = randomChoice(this.getActions())
+  timestep(getActions, resetGame, position, targetPosition) {
+    return randomChoice(getActions(position[0], position[1]))
   }
 }

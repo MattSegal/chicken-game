@@ -1,4 +1,4 @@
-import C from 'constants'
+import C from '../constants'
 import Actor from './base'
 import { shuffle } from './utils'
 

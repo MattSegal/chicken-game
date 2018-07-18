@@ -1,12 +1,19 @@
+import React from 'react'
+import ReactDOM from 'react-dom'
+
 import View from './view'
+import Grid from './grid'
 import GameBoard from './gameboard'
-import Controller from './controls'
+import App from './app'
 
 // Initialize board
-const board = new GameBoard()
+const baseGrid = new Grid()
+// const trainingGrid = baseGrid.copy()
+const displayGrid = baseGrid.copy()
+const board = new GameBoard(displayGrid._grid)
 
 // Draw grid
-View.drawWhenReady(board.grid)
+View.drawWhenReady(displayGrid._grid)
 
-// Hook up controls
-new Controller(board)
+// Draw controls
+ReactDOM.render(<App board={board}/>, document.getElementById('controls'))
