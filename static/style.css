@@ -82,13 +82,6 @@ select:hover {
     margin-bottom: 1rem;
 }
 
-.button[disabled] {
-    color: #999;
-    border-color: #999;
-    pointer-events: none;
-    cursor: not-allowed;
-}
-
 .button:hover {
     box-shadow: 1px 1px 5px #666;
 }

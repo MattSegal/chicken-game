@@ -1,6 +1,6 @@
 import C from 'constants'
 import Actor from './base'
-
+import { shuffle } from './utils'
 
 // Uses A* pathing algorithm to find shortest path to the target
 // Throw in a random move every 10 steps
@@ -8,7 +8,6 @@ export default class AStarActor extends Actor {
 
   constructor(name, value, board) {
     super(name, value, board)
-    this.policySteps = 0
 
     // Setup a row + col lookup table that scores all moves on the gameboard
     this.squares = {}
@@ -21,15 +20,6 @@ export default class AStarActor extends Actor {
 
   timestep() {
     super.timestep()
-    this.policySteps += 1
-    if (this.policySteps % 2 == 0) return
-
-    // Randomly choose next action every 8-10th step
-    if (this.policySteps % (10 - Math.floor(Math.random() * 2)) == 0) {
-      this.policySteps = 0
-      this.randomPolicy()
-      return
-    }
 
     // Find shortest path with A* algorithm
     let iterations = 0
@@ -50,7 +40,7 @@ export default class AStarActor extends Actor {
       // and then add them to the set of possible squares
       const currentPos = positionfromKey(current)
       const actions = this.board.getActions(currentPos[0], currentPos[1])
-      for (let action of actions) {
+      for (let action of shuffle(actions)) {
         const actionPos = Actor.getNewPosition(action, currentPos)
         const actionKey = keyFromPosition(actionPos)
         if (seen.has(actionKey)) continue
@@ -108,19 +98,11 @@ export default class AStarActor extends Actor {
       this.nextAction = Actor.getActionFromPositions(this.pos, positionfromKey(current))
     }
   }
-
-  randomPolicy() {
-    const actions = this.getActions()
-    const action = actions[Math.floor(Math.random() * actions.length)]
-    this.nextAction = action
-  }
 }
 
 
 const keyFromPosition = (pos) => pos[0] * 100 + pos[1]
 const positionfromKey = (key) => [(key - key % 100) / 100, key % 100]
-
-
 
 const sameRow = (sqA, sqB) =>
   sqA.pos[0] === sqB.pos[0]

@@ -1,7 +1,7 @@
 import C from 'constants'
 
 
-const fillCol = () => Math.random() > 0.2 ? C.EMPTY : C.TREE
+const fillCol = () => Math.random() > C.TREE_DENSITY ? C.EMPTY : C.TREE
 const fillRow = () => Array(C.BOARD_LENGTH).fill(0).map(fillCol)
 
 
@@ -13,6 +13,7 @@ export default class GameBoard {
     this.setupGrid()
     this.timerId = null
     this.numGames = 0
+    this.gameIterations = 0
   }
 
   setupGrid = () => {
@@ -82,8 +83,10 @@ export default class GameBoard {
 
   resetInterval = () => {
     clearInterval(this.timerId)
-    this.reset()
-    this.runInterval()
+    setTimeout(() => {
+      this.reset()
+      this.runInterval()
+    }, 3 * C.TICK)
   }
 
   runIters = (iters) => {
@@ -102,12 +105,18 @@ export default class GameBoard {
   }
 
   run = reset => {
-      this.moveActors()
-      if (distance(this.fox, this.chicken) < 2) {
-        // Game over
-        reset()
-        this.numGames++
-      }
+    this.gameIterations++
+    this.moveActors()
+    const shoudlReset = (
+      this.gameIterations >= C.MAX_EPISODE_LENGTH ||
+      distance(this.fox, this.chicken) < 2
+    )
+    if (shoudlReset) {
+      // Game over
+      this.gameIterations = 0
+      reset()
+      this.numGames++
+    }
   }
 }
 

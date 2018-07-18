@@ -1,11 +1,10 @@
 import Actor from './base'
+import { randomChoice } from './utils'
 
 // Totally random actor
 export default class RandomActor extends Actor {
   timestep() {
     super.timestep()
-    const actions = this.getActions()
-    const action = actions[Math.floor(Math.random() * actions.length)]
-    this.nextAction = action
+    this.nextAction = randomChoice(this.getActions())
   }
 }

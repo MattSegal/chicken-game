@@ -51,10 +51,10 @@ export default class View {
   static drawGridSquares(grid) {
     for (let i = 0; i < grid.length; i++) {
       for (let j = 0; j < grid[i].length; j++) {
-        if (grid[i][j] === C.CHICKEN) {
-          View.drawSprite(chickenImage, i, j)
-        } else if (grid[i][j] === C.FOX) {
+        if (grid[i][j] === C.FOX) {
           View.drawSprite(foxImage, i, j)
+        } else if (grid[i][j] === C.CHICKEN) {
+          View.drawSprite(chickenImage, i, j)
         } else if (grid[i][j] === C.TREE) {
           View.drawSprite(treeImage, i, j)
         } else {

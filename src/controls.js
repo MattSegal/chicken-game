@@ -5,23 +5,22 @@ import GreedyActor from './actors/greedy'
 import RandomActor from './actors/random'
 import AStarActor from './actors/a-star'
 import TemporalDifferenceActor from './actors/temporal-difference'
-
-
-const trainingOptions = [
-  'temporal difference',
-]
+import MonteCarloActor from './actors/monte-carlo'
 
 const chickenOptions = {
   'temporal difference': board => new TemporalDifferenceActor('chicken', C.CHICKEN, board),
+  'monte carlo': board => new MonteCarloActor('chicken', C.CHICKEN, board),
   random: board => new RandomActor('chicken', C.CHICKEN, board),
   'greedy flight': board => (new GreedyActor('chicken', C.CHICKEN, board)).flee(),
   player: board => new PlayerActor('chicken', C.CHICKEN, board),
 }
 
 const foxOptions = {
-  'a* search': board => new AStarActor('fox', C.FOX, board),
-  random: board => new RandomActor('fox', C.FOX, board),
   'greedy pursuit': board => (new GreedyActor('fox', C.FOX, board)).follow(),
+  'a* search': board => new AStarActor('fox', C.FOX, board),
+  'monte carlo': board => (new MonteCarloActor('fox', C.FOX, board)).follow(),
+  'temporal difference': board => (new TemporalDifferenceActor('fox', C.FOX, board)).follow(),
+  random: board => new RandomActor('fox', C.FOX, board),
   player: board => new PlayerActor('fox', C.FOX, board),
 }
 
@@ -31,8 +30,8 @@ export default class Controller {
     this.board = board
     this.actors = {}
 
-    board.addFox(foxOptions['a* search'](board))
-    board.addChicken(chickenOptions['temporal difference'](board))
+    board.addFox(foxOptions[Object.keys(foxOptions)[0]](board))
+    board.addChicken(chickenOptions[Object.keys(chickenOptions)[0]](board))
 
     this.node = document.getElementById('controls')
     this.buildSelect('chicken algorithm', chickenOptions, this.onSelectChicken)
@@ -43,15 +42,14 @@ export default class Controller {
   }
 
   onNewGame = e => this.board.reset()
-  onSelectFox = e => this.board.addFox(foxOptions[e.target.value](this.board))
+  onSelectFox = e => {
+    e.target.blur()
+    this.board.addFox(foxOptions[e.target.value](this.board))
+  }
   onSelectChicken = e => {
     const key = e.target.value
+    e.target.blur()
     this.board.addChicken(chickenOptions[key](this.board))
-    if (trainingOptions.includes(key)) {
-      this.trainBtn.removeAttribute('disabled')
-    } else {
-      this.trainBtn.setAttribute('disabled', true)
-    }
   }
   onTrain = e => {
     this.board.runIters(C.TRAINING_STEPS)

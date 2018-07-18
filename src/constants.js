@@ -1,11 +1,13 @@
 
 export default {
   // Game constants
-  BOARD_LENGTH: 18, // squares
+  BOARD_LENGTH: 16, // squares
   MAX_LENGTH: 900,  // px
   TICK: 100,  // ms
-  TRAINING_STEPS: 1000 * 1000, // 10e6 steps
+  TRAINING_STEPS: 2 * 1000 * 1000, // 2* 10e6 steps
   LOGGING: false,
+  TREE_DENSITY: 0.15,
+  MAX_EPISODE_LENGTH: 500, // steps
 
   ACTIONS: {
     NORTH: 'NORTH',

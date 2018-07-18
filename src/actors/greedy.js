@@ -1,5 +1,6 @@
 import C from 'constants'
 import Actor from './base'
+import { randomChoice } from './utils'
 
 const OPPOSITE = {
   [C.ACTIONS.NORTH]: C.ACTIONS.SOUTH,
@@ -45,7 +46,7 @@ export default class GreedyActor extends Actor {
         this.board.reset()
         return
       }
-      const action = actions[Math.floor(Math.random() * actions.length)]
+      const action = randomChoice(actions)
       const chooseGreedily = (
         (action === C.ACTIONS.NORTH && row > targetRow) ||
         (action === C.ACTIONS.SOUTH && row < targetRow) ||
