@@ -27,7 +27,7 @@ const mainConfig = Object.assign({}, baseConfig, {
           loader: 'worker-loader',
           options: {
             name: 'build.worker.js',
-            publicPath: '/static/'
+            publicPath: './static/'
           },
         }
       },

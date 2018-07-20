@@ -226,7 +226,7 @@ eval("\n\n// Thanks StackOverflow!\nvar shuffle = function shuffle(a) {\n    var
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\nexports.default = {\n  // Game constants\n  BOARD_LENGTH: 16, // squares\n  MAX_LENGTH: 900, // px\n  TICK: 150, // ms\n  TRAINING_STEPS: 1000 * 1000, // 10e6 steps\n  LOGGING: false,\n  TREE_DENSITY: 0.15,\n  MAX_EPISODE_LENGTH: 500, // steps\n\n  ACTIONS: {\n    NORTH: 'NORTH',\n    SOUTH: 'SOUTH',\n    EAST: 'EAST',\n    WEST: 'WEST'\n  },\n\n  VECTORS: {\n    NORTH: [-1, 0],\n    SOUTH: [1, 0],\n    EAST: [0, 1],\n    WEST: [0, -1]\n  },\n\n  // Sprites\n  EMPTY: 'EMPTY',\n  CHICKEN: 'CHICKEN',\n  FOX: 'FOX',\n  TREE: 'TREE',\n\n  // Sprite rendering\n  SRC_LENGTH: 256, // px\n  PADDING: 5 // px\n};\n\n//# sourceURL=webpack:///./src/constants.js?");
+eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\nexports.default = {\n  // Game constants\n  BOARD_LENGTH: 14, // squares\n  MAX_LENGTH: 900, // px\n  TICK: 150, // ms\n  TRAINING_STEPS: 1000 * 1000, // 10e6 steps\n  LOGGING: false,\n  TREE_DENSITY: 0.15,\n  MAX_EPISODE_LENGTH: 500, // steps\n\n  ACTIONS: {\n    NORTH: 'NORTH',\n    SOUTH: 'SOUTH',\n    EAST: 'EAST',\n    WEST: 'WEST'\n  },\n\n  VECTORS: {\n    NORTH: [-1, 0],\n    SOUTH: [1, 0],\n    EAST: [0, 1],\n    WEST: [0, -1]\n  },\n\n  // Sprites\n  EMPTY: 'EMPTY',\n  CHICKEN: 'CHICKEN',\n  FOX: 'FOX',\n  TREE: 'TREE',\n\n  // Sprite rendering\n  SRC_LENGTH: 256, // px\n  PADDING: 5 // px\n};\n\n//# sourceURL=webpack:///./src/constants.js?");
 
 /***/ }),
 
