@@ -61,6 +61,7 @@ select {
     padding: 7px 15px;
     cursor: pointer;
     text-transform: uppercase;
+    margin-right: 1rem;
 }
 
 select:hover {
@@ -68,7 +69,15 @@ select:hover {
     box-shadow: 1px 1px 5px #666;
 }
 
+select[disabled] {
+    color: grey;
+    border-color: grey;
+    cursor: not-allowed;
+}
+
+
 .button {
+    position: relative;
     user-select: none;
     display: flex;
     align-items: center;
@@ -79,10 +88,39 @@ select:hover {
     cursor: pointer;
     text-transform: uppercase;
     width: 8rem;
-    margin-bottom: 1rem;
+}
+
+.button[disabled] {
+    color: grey;
+    border-color: grey;
+    cursor: not-allowed;
 }
 
 .button:hover {
     box-shadow: 1px 1px 5px #666;
 }
 
+.button .progress {
+    content: ' ';
+    position: absolute;
+    background-color: #59ec59;
+    opacity: 0.5;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.buttonRow {
+    display: flex;
+    margin-bottom: 1rem;
+}
+
+.button + .button {
+    margin-left: 1rem;
+}
+
+.games {
+    font-size: 1.2rem;
+    margin: 0 1rem;
+}

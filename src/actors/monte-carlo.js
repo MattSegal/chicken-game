@@ -6,16 +6,38 @@ const ALPHA = 0.9
 
 export default class MonteCarloActor extends Actor {
 
-  constructor(name, value, board) {
-    super(name, value, board)
+  constructor(value) {
+    super(value)
     this.isFleeing = true
     this.episodeReward = 0
-    this.states = new StateSpace(this.board.grid, () => ({
-      value: 0,
+    this.states = new StateSpace(() => ({
+      value: 0.1 * Math.random(),
       visits: 0
     }))
     this.seen = new Set()
   }
+
+  serialize() {
+    return {
+      numGames: this.numGames,
+      type: this.type,
+      states: this.states._states,
+    }
+  }
+  deserialize(data) {
+    console.log(data)
+    this.numGames = data.numGames
+    this.states._states = data.states
+  }
+  reset = () => {
+    // Reset any global actor state
+    this.numGames = 0
+    this.states = new StateSpace(() => ({
+      value: 0.1 * Math.random(),
+      visits: 0
+    }))
+  }
+
 
   flee() {
     this.isFleeing = true
@@ -27,8 +49,7 @@ export default class MonteCarloActor extends Actor {
     return this
   }
 
-  getReward() {
-    const distance = Actor.getManhattanDistance(this.pos, this.target.pos)
+  getReward(distance) {
     if (this.isFleeing) {
       // Encourage a fleer to keep away
       return distance < 5 ? -1 : 1
@@ -38,9 +59,7 @@ export default class MonteCarloActor extends Actor {
     }
   }
 
-  reset() {
-    super.reset()
-    if (!this.seen) return
+  endGame() {
     // Update our value function with information from this episode
     for (let seenKey of this.seen) {
       const state = this.states.getState(seenKey)
@@ -52,14 +71,12 @@ export default class MonteCarloActor extends Actor {
     this.seen = new Set()
   }
 
-  timestep() {
-    // Perform all actions for this timestep
-    super.timestep()
-
+  timestep(getActions, resetGame, position, targetPosition) {
     // Record the reward we got for this timestep
-    this.episodeReward += this.getReward()
+    const distance = Actor.getManhattanDistance(position, targetPosition)
+    this.episodeReward += this.getReward(distance)
     // Record our visit to this state
-    const lookupKey = this.states.getKeyFromPositions(this.pos, this.target.pos)
+    const lookupKey = this.states.getKeyFromPositions(position, targetPosition)
     this.seen.add(lookupKey)
     const currentState = this.states.getState(lookupKey)
     currentState.visits += 1
@@ -67,22 +84,22 @@ export default class MonteCarloActor extends Actor {
     // Using the current value function, greedily choose where we're going to go next
     let bestAction = null
     let bestValue = Number.NEGATIVE_INFINITY
-    let newPosition = this.pos
+    let newPosition = position
 
     // Evaluate all possible actions
-    const actions = this.getActions()
+    const actions = getActions(position[0], position[1])
     actions.push(null) // Give the actor the option of not moving
     for (let action of actions) {
       // Find the actor's new position given the action
       let actionPosition
       if (action) {
-        actionPosition = Actor.getNewPosition(action, this.pos)
+        actionPosition = Actor.getNewPosition(action, position)
       } else {
-        actionPosition = this.pos
+        actionPosition = position
       }
 
       // If this new action is more valuable than our best option, choose that
-      const nextState = this.states.getStateFromPositions(actionPosition, this.target.pos)
+      const nextState = this.states.getStateFromPositions(actionPosition, targetPosition)
       if (nextState.value > bestValue) {
         bestValue = nextState.value
         bestAction = action
@@ -91,7 +108,7 @@ export default class MonteCarloActor extends Actor {
     }
 
     // Perform the best known action
-    this.nextAction = bestAction
+    return bestAction
   }
 }
 

@@ -3,17 +3,16 @@ import ReactDOM from 'react-dom'
 
 import View from './view'
 import Grid from './grid'
-import GameBoard from './gameboard'
+import OnlineGameBoard from './onlineboard'
 import App from './app'
 
 // Initialize board
 const baseGrid = new Grid()
-// const trainingGrid = baseGrid.copy()
-const displayGrid = baseGrid.copy()
-const board = new GameBoard(displayGrid._grid)
+const displayGrid = baseGrid.getCopy()
+const board = new OnlineGameBoard(displayGrid)
 
 // Draw grid
-View.drawWhenReady(displayGrid._grid)
+View.drawWhenReady(displayGrid)
 
 // Draw controls
 ReactDOM.render(<App board={board}/>, document.getElementById('controls'))

@@ -1,29 +1,7 @@
 import React, { Component } from 'react'
 
 import C from './constants'
-import PlayerActor from './actors/player'
-import GreedyActor from './actors/greedy'
-import RandomActor from './actors/random'
-import AStarActor from './actors/a-star'
-import TemporalDifferenceActor from './actors/temporal-difference'
-import MonteCarloActor from './actors/monte-carlo'
-
-const chickenOptions = {
-  // 'temporal difference': board => new TemporalDifferenceActor('chicken', C.CHICKEN, board),
-  // 'monte carlo': board => new MonteCarloActor('chicken', C.CHICKEN, board),
-  random: new RandomActor(C.CHICKEN),
-  // 'greedy flight': board => (new GreedyActor('chicken', C.CHICKEN, board)).flee(),
-  player: new PlayerActor(C.CHICKEN),
-}
-
-const foxOptions = {
-  // 'greedy pursuit': board => (new GreedyActor('fox', C.FOX, board)).follow(),
-  // 'a* search': board => new AStarActor('fox', C.FOX, board),
-  // 'monte carlo': board => (new MonteCarloActor('fox', C.FOX, board)).follow(),
-  // 'temporal difference': board => (new TemporalDifferenceActor('fox', C.FOX, board)).follow(),
-  random: new RandomActor(C.FOX),
-  player: new PlayerActor(C.FOX),
-}
+import { FOX_ALGOS, CHICKEN_ALGOS, getChickenActor, getFoxActor } from './actors'
 
 
 export default class App extends Component {
@@ -31,63 +9,120 @@ export default class App extends Component {
   constructor(props) {
     super(props)
     this.board = props.board
-    this.board.addFox(foxOptions[Object.keys(foxOptions)[0]])
-    this.board.addChicken(chickenOptions[Object.keys(chickenOptions)[0]])
+    const foxAlgorithm = Object.values(FOX_ALGOS)[0]
+    const chickenAlgorithm = Object.values(CHICKEN_ALGOS)[0]
+    const foxActor = getFoxActor(foxAlgorithm)
+    const chickenActor = getChickenActor(chickenAlgorithm)
+    this.board.addChicken(chickenActor)
+    this.board.addFox(foxActor)
     this.board.runInterval()
-
     this.state = {
+      isTraining: false,
+      progress: 0,
+      chicken: {
+        games: 0,
+        actor: chickenActor,
+        algorithm: chickenAlgorithm,
+      },
+      fox: {
+        games: 0,
+        actor: foxActor,
+        algorithm: foxAlgorithm,
+      }
+    }
+  }
 
+  componentDidMount() {
+    setInterval(() => {
+      this.setState({
+        ...this.state,
+        chicken: {...this.state.chicken, games: this.state.chicken.actor.numGames},
+        fox: {...this.state.fox, games: this.state.fox.actor.numGames}
+      })
+    }, 500)
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (this.state.chicken.algorithm !== prevState.chicken.algorithm) {
+      this.board.addChicken(this.state.chicken.actor)
+    } else if (this.state.fox.algorithm !== prevState.fox.algorithm) {
+      this.board.addFox(this.state.fox.actor)
     }
   }
 
   onSelectChicken = e => {
-    const key = e.target.value
+    const algorithm = e.target.value
+    const actor = getChickenActor(algorithm)
+    this.setState({ chicken: { games: actor.numGames, actor: actor, algorithm: algorithm }})
     e.target.blur()
-    this.board.addChicken(chickenOptions[key])
   }
 
   onSelectFox = e => {
+    const algorithm = e.target.value
+    const actor = getFoxActor(algorithm)
+    this.setState({ fox: { games: actor.numGames, actor: actor, algorithm: algorithm }})
     e.target.blur()
-    this.board.addFox(foxOptions[e.target.value])
   }
 
   onNewGame = e => this.board.reset()
 
   onTrain = e => {
-    this.board.runIters(C.TRAINING_STEPS)
-    this.board.reset()
-    this.board.runInterval()
+    this.setState({ isTraining: true })
+    this.board.train(this.onTrainingProgress, this.onDoneTraining)
   }
+
+  onTrainingProgress = progress => this.setState({ progress: progress })
+  onDoneTraining = () => this.setState({ isTraining: false, progress: 0 })
 
   render() {
     return (
         <div>
-          <div className="control">
-            <label>chicken algorithm</label>
-            <select onChange={this.onSelectChicken}>
-              {Object.keys(chickenOptions).map(k =>
-                <option key={k} value={k}>{k}</option>
-              )}
-            </select>
+          <ActorPanel
+            label="chicken algorithm"
+            onSelect={this.onSelectChicken}
+            algorithms={CHICKEN_ALGOS}
+            games={this.state.chicken.games}
+            onReset={this.state.chicken.actor.reset}
+            isTraining={this.state.isTraining}
+          />
+          <ActorPanel
+            label="fox algorithm"
+            onSelect={this.onSelectFox}
+            algorithms={FOX_ALGOS}
+            games={this.state.fox.games}
+            onReset={this.state.fox.actor.reset}
+            isTraining={this.state.isTraining}
+          />
+          <div className="buttonRow">
+            <div className="button" onClick={this.onNewGame} disabled={this.state.isTraining}>
+              new game
+            </div>
+            <div className="button" onClick={this.onTrain} disabled={this.state.isTraining}>
+              <div className="progress" style={{'right': `${100 - this.state.progress}%`}}></div>
+              train
+            </div>
           </div>
-          <div className="control">
-            <label>fox algorithm</label>
-            <select onChange={this.onSelectFox}>
-              {Object.keys(foxOptions).map(k =>
-                <option key={k} value={k}>{k}</option>
-              )}
-            </select>
-          </div>
-          <div className="button" onClick={this.onNewGame}>
-            new game
-          </div>
-          <div className="button" onClick={this.onTrain}>
-            train
-          </div>
-
         </div>
     )
   }
 }
 
+const ActorPanel = props => (
+  <div className="control">
+    <label>{props.label}</label>
+    <select onChange={props.onSelect} disabled={props.isTraining}>
+      {Object.values(props.algorithms).map(v =>
+        <option key={v} value={v}>{v}</option>
+      )}
+    </select>
+    <div className="button" onClick={props.onReset} disabled={props.isTraining}>
+      reset
+    </div>
+    <span className="games">{displayGames(props.games)} games</span>
+  </div>
+)
 
+
+const displayGames = games => games > 1000
+  ? ((games - (games % 1000)) / 1000) + 'k'
+  : games

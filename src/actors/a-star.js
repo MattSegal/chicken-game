@@ -6,9 +6,8 @@ import { shuffle } from './utils'
 // Throw in a random move every 10 steps
 export default class AStarActor extends Actor {
 
-  constructor(name, value, board) {
-    super(name, value, board)
-
+  constructor(value) {
+    super(value)
     // Setup a row + col lookup table that scores all moves on the gameboard
     this.squares = {}
     for (let a = 0; a <  C.BOARD_LENGTH; a++) {
@@ -18,18 +17,16 @@ export default class AStarActor extends Actor {
     }
   }
 
-  timestep() {
-    super.timestep()
-
+  timestep(getActions, resetGame, position, targetPosition) {
     // Find shortest path with A* algorithm
     let iterations = 0
     let possible = new Set()
     let seen = new Set()
 
-    let current = keyFromPosition(this.pos)
-    const target = keyFromPosition(this.target.pos)
+    let current = keyFromPosition(position)
+    const target = keyFromPosition(targetPosition)
     this.squares[current].steps = 0
-    this.squares[current].score = Actor.getManhattanDistance(this.pos, this.target.pos)
+    this.squares[current].score = Actor.getManhattanDistance(position, targetPosition)
 
     // Find a square with the shortest distance to the target
     while (current !== target) {
@@ -39,7 +36,7 @@ export default class AStarActor extends Actor {
       // Find the new squares reachable from current square
       // and then add them to the set of possible squares
       const currentPos = positionfromKey(current)
-      const actions = this.board.getActions(currentPos[0], currentPos[1])
+      const actions = getActions(currentPos[0], currentPos[1])
       for (let action of shuffle(actions)) {
         const actionPos = Actor.getNewPosition(action, currentPos)
         const actionKey = keyFromPosition(actionPos)
@@ -47,15 +44,15 @@ export default class AStarActor extends Actor {
         this.squares[actionKey].steps = this.squares[current].steps + 1
         this.squares[actionKey].score = (
           this.squares[actionKey].steps +
-          Actor.getManhattanDistance(actionPos, this.target.pos)
+          Actor.getManhattanDistance(actionPos, targetPosition)
         )
         possible.add(actionKey)
       }
 
       // Ensure that there are possible moves remaining
       if (possible.size < 1) {
-        C.LOGGING && console.warn('Cannot reach target: ', this.target)
-        this.board.reset()
+        C.LOGGING && console.warn('Cannot reach target: ', targetPosition)
+        resetGame()
         return
       }
 
@@ -70,12 +67,11 @@ export default class AStarActor extends Actor {
       }
       current = best
 
-
       // Break loop if we have done too many iterations
       iterations++
       if (iterations > 5000) {
-        C.LOGGING && console.error('Too many iterations trying to reach square: ', this.target)
-        this.board.reset()
+        C.LOGGING && console.error('Too many iterations trying to reach square: ', targetPosition)
+        resetGame()
         return
       }
     }
@@ -93,9 +89,8 @@ export default class AStarActor extends Actor {
       }
       current = best
     }
-
     if (current) {
-      this.nextAction = Actor.getActionFromPositions(this.pos, positionfromKey(current))
+      return Actor.getActionFromPositions(position, positionfromKey(current))
     }
   }
 }

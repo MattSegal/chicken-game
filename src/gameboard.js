@@ -1,5 +1,6 @@
 import C from './constants'
 
+
 // Game model
 export default class GameBoard {
   constructor(grid) {
@@ -11,6 +12,7 @@ export default class GameBoard {
     this.chickenPosition = this.getRandomPosition()
 
     this.timerId = null
+    this.isTraining = false
     this.gameIterations = 0
   }
 
@@ -49,25 +51,6 @@ export default class GameBoard {
       if (this.grid[position[0]][position[1]] === C.EMPTY) {
         return position
       }
-    }
-  }
-
-  runInterval = () => {
-    this.timerId = setInterval(() => this.run(this.resetInterval), C.TICK)
-  }
-
-  resetInterval = () => {
-    clearInterval(this.timerId)
-    setTimeout(() => {
-      this.reset()
-      this.runInterval()
-    }, 3 * C.TICK)
-  }
-
-  runIters = (iters) => {
-    clearInterval(this.timerId)
-    for (let i = 0; i < iters; i++) {
-      this.run(this.reset)
     }
   }
 

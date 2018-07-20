@@ -32,6 +32,7 @@
     "react-dom": "^16.4.1",
     "style-loader": "^0.21.0",
     "webpack": "^4.16.1",
-    "webpack-cli": "^3.0.8"
+    "webpack-cli": "^3.0.8",
+    "worker-loader": "^2.0.0"
   }
 }

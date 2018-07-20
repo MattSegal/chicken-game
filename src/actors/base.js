@@ -4,6 +4,7 @@ import C from '../constants'
 // Represents the chicken/fox on the game board
 export default class Actor {
   constructor(value) {
+    this.type = null
     this.value = value
     this.numGames = 0
   }
@@ -14,9 +15,19 @@ export default class Actor {
     return null
   }
 
-  getReward() {
-    // Get the reward for this time-step
-    return 0
+  // Transform data for transfer to web worker
+  serialize() {
+    return {
+      numGames: this.numGames,
+      type: this.type,
+    }
+  }
+  deserialize(data) {
+    this.numGames = data.numGames
+  }
+  reset = () => {
+    // Reset any global actor state
+    this.numGames = 0
   }
 
   endGame() {

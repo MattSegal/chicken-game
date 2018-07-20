@@ -1,14 +1,36 @@
 const path = require('path')
 const webpack = require('webpack')
 
-module.exports = {
-  entry: './src/index',
+
+const baseConfig = {
   output: {
       path: path.resolve(__dirname, 'static'),
-      filename: 'main.js',
+      filename: '[name].js',
+  },
+  resolve: {
+    extensions: ['*', '.js', '.jsx'],
+    modules: [
+      path.resolve(__dirname, 'node_modules'),
+    ]
+  },
+}
+
+const mainConfig = Object.assign({}, baseConfig, {
+  entry: {
+    main: './src/index',
   },
   module: {
     rules: [
+      {
+        test: /worker\.js$/,
+        use: {
+          loader: 'worker-loader',
+          options: {
+            name: 'build.worker.js',
+            publicPath: '/static/'
+          },
+        }
+      },
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
@@ -29,10 +51,6 @@ module.exports = {
       }
     ]
   },
-  resolve: {
-    extensions: ['*', '.js', '.jsx'],
-    modules: [
-      path.resolve(__dirname, 'node_modules'),
-    ]
-  },
-}
+})
+
+module.exports = [mainConfig]

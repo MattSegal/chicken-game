@@ -7,10 +7,29 @@ const GAMMA = 0.9
 
 export default class TemporalDifferenceActor extends Actor {
 
-  constructor(name, value, board) {
-    super(name, value, board)
+  constructor(value) {
+    super(value)
     this.isFleeing = true
-    this.states = new StateSpace(this.board.grid, () => ({ value: 0 }))
+    this.states = new StateSpace(() => ({ value: 0.1 * Math.random() }))
+  }
+
+  // Transform data for transfer to web worker
+  serialize() {
+    return {
+      numGames: this.numGames,
+      type: this.type,
+      states: this.states._states,
+    }
+  }
+  deserialize(data) {
+    console.log(data)
+    this.numGames = data.numGames
+    this.states._states = data.states
+  }
+  reset = () => {
+    // Reset any global actor state
+    this.numGames = 0
+    this.states = new StateSpace(() => ({ value: 0.1 * Math.random() }))
   }
 
   flee() {
@@ -23,8 +42,7 @@ export default class TemporalDifferenceActor extends Actor {
     return this
   }
 
-  getReward() {
-    const distance = Actor.getManhattanDistance(this.pos, this.target.pos)
+  getReward(distance) {
     if (this.isFleeing) {
       // Encourage a fleer to keep away
       return distance < 5 ? -1 : 1
@@ -34,29 +52,26 @@ export default class TemporalDifferenceActor extends Actor {
     }
   }
 
-  timestep() {
-    // Perform all actions for this timestep
-    super.timestep()
-
+  timestep(getActions, resetGame, position, targetPosition) {
     // Using the current value function, greedily choose where we're going to go next
     let bestAction = null
     let bestValue = Number.NEGATIVE_INFINITY
-    let newPosition = this.pos
+    let newPosition = position
 
     // Evaluate all possible actions
-    const actions = this.getActions()
+    const actions = getActions(position[0], position[1])
     actions.push(null) // Give the actor the option of not moving
     for (let action of actions) {
       // Find the actor's new position given the action
       let actionPosition
       if (action) {
-        actionPosition = Actor.getNewPosition(action, this.pos)
+        actionPosition = Actor.getNewPosition(action, position)
       } else {
-        actionPosition = this.pos
+        actionPosition = position
       }
 
       // If this new action is more valuable than our best option, choose that
-      const actionValue = this.getValue(actionPosition)
+      const actionValue = this.states.getStateFromPositions(actionPosition, targetPosition).value
       if (actionValue > bestValue) {
         bestValue = actionValue
         bestAction = action
@@ -64,27 +79,20 @@ export default class TemporalDifferenceActor extends Actor {
       }
     }
 
-    // Perform the best known action
-    this.nextAction = bestAction
-
     // Using the expected value of our next move, update the value function
     // with the temporal difference algorithm
-    const reward = this.getReward()
-    const currentValue = this.getValue(this.pos)
-    const expectedValue = this.getValue(newPosition)
+    const distance = Actor.getManhattanDistance(position, targetPosition)
+    const reward = this.getReward(distance)
+    const currentValue = this.states.getStateFromPositions(position, targetPosition).value
+    const expectedValue = this.states.getStateFromPositions(newPosition, targetPosition).value
     const targetValue = reward + GAMMA * expectedValue
     const error = targetValue - currentValue
     const newValue = currentValue + ALPHA * error
-    this.setValue(newValue)
-  }
+    const currentState = this.states.getStateFromPositions(position, targetPosition)
+    currentState.value = newValue
 
-  // Get the value of the state with target position and 'pos'
-  getValue = pos => this.states.getStateFromPositions(pos, this.target.pos).value
-
-  // Set the value of the state with target position and current actor position
-  setValue = val => {
-    const state = this.states.getStateFromPositions(this.pos, this.target.pos)
-    state.value = val
+    // Perform the best known action
+    return bestAction
   }
 }
 

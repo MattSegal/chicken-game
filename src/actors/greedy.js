@@ -27,14 +27,13 @@ export default class GreedyActor extends Actor {
     return this
   }
 
-  timestep() {
-    super.timestep()
-    const row = this.pos[0]
-    const col = this.pos[1]
-    const targetRow = this.target.pos[0]
-    const targetCol = this.target.pos[1]
+  timestep(getActions, resetGame, position, targetPosition) {
+    const row = position[0]
+    const col = position[1]
+    const targetRow = targetPosition[0]
+    const targetCol = targetPosition[1]
 
-    const actions = this.board.getActions(row, col)
+    const actions = getActions(row, col)
     const seen = new Set()
 
     let chosenAction = null
@@ -43,7 +42,7 @@ export default class GreedyActor extends Actor {
       iter++
       if (iter > 100) {
         console.warn('GreedyActor is too tired to continue.')
-        this.board.reset()
+        resetGame()
         return
       }
       const action = randomChoice(actions)
@@ -66,6 +65,6 @@ export default class GreedyActor extends Actor {
         chosenAction = action
       }
     }
-    this.nextAction = chosenAction
+    return chosenAction
   }
 }
