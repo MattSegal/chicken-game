@@ -11,7 +11,7 @@ export default class MonteCarloActor extends Actor {
     this.isFleeing = true
     this.episodeReward = 0
     this.states = new StateSpace(() => ({
-      value: 0.1 * Math.random(),
+      value: 0.01 * Math.random(),
       visits: 0
     }))
     this.seen = new Set()
@@ -25,17 +25,26 @@ export default class MonteCarloActor extends Actor {
     }
   }
   deserialize(data) {
-    console.log(data)
+    this.seen = new Set()
+    this.episodeReward = 0
     this.numGames = data.numGames
     this.states._states = data.states
   }
   reset = () => {
     // Reset any global actor state
     this.numGames = 0
+    this.seen = new Set()
+    this.episodeReward = 0
     this.states = new StateSpace(() => ({
-      value: 0.1 * Math.random(),
+      value: 0.01 * Math.random(),
       visits: 0
     }))
+  }
+
+  getValues(targetPosition) {
+    // Get an array of values for a given target position
+    // TODO
+    return []
   }
 
 
@@ -64,11 +73,12 @@ export default class MonteCarloActor extends Actor {
     for (let seenKey of this.seen) {
       const state = this.states.getState(seenKey)
       const error = this.episodeReward - state.value
-      state.value += (ALPHA / state.visits) * error
+      state.value += ALPHA * error // / state.visits
     }
     // Reset our reward and seen states
     this.episodeReward = 0
     this.seen = new Set()
+    this.numGames++
   }
 
   timestep(getActions, resetGame, position, targetPosition) {

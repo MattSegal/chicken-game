@@ -1,4 +1,7 @@
 import C from './constants'
+import ColorWheel from './colors'
+
+const colorWheel = new ColorWheel(Math.PI / 9, 0.25, 0.9)
 
 const getImage =src => {
   const img = new Image();
@@ -27,13 +30,13 @@ const ctx = canvas.getContext('2d')
 
 export default class View {
 
-  static drawWhenReady(grid) {
-    View.onImagesLoaded().then(() => View.drawLoop(grid))
+  static drawWhenReady(board) {
+    View.onImagesLoaded().then(() => View.drawLoop(board))
   }
 
-  static drawLoop(grid) {
-    View.drawGridSquares(grid)
-    requestAnimationFrame(() => View.drawLoop(grid))
+  static drawLoop(board) {
+    View.drawGridSquares(board)
+    requestAnimationFrame(() => View.drawLoop(board))
   }
 
   static onImagesLoaded() {
@@ -48,7 +51,17 @@ export default class View {
     return canvas.width / C.BOARD_LENGTH
   }
 
-  static drawGridSquares(grid) {
+  static drawGridSquares(board) {
+    const grid = board.grid
+    const actorValues = board.getActorValues()
+    if (actorValues) {
+      for (let i = 0; i < actorValues.length; i++) {
+        for (let j = 0; j < actorValues[i].length; j++) {
+          View.drawValue(i, j, actorValues[i][j])
+        }
+      }
+    }
+
     for (let i = 0; i < grid.length; i++) {
       for (let j = 0; j < grid[i].length; j++) {
         if (grid[i][j] === C.FOX) {
@@ -57,11 +70,20 @@ export default class View {
           View.drawSprite(chickenImage, i, j)
         } else if (grid[i][j] === C.TREE) {
           View.drawSprite(treeImage, i, j)
-        } else {
+        } else if (!actorValues) {
           View.clearSquare(i, j)
         }
       }
     }
+  }
+
+  static drawValue(row, col, val) {
+    const squareLength = View.getSquareLength()
+    const x = (col * squareLength) + C.PADDING
+    const y = (row * squareLength) + C.PADDING
+    const length = squareLength - (2 * C.PADDING)
+    ctx.fillStyle = colorWheel.rotate(val * 3 * Math.PI / 5).asCSS()
+    ctx.fillRect(x, y, length, length)
   }
 
   static drawSprite(img, row, col) {

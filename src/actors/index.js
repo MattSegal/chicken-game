@@ -6,23 +6,25 @@ import AStarActor from './a-star'
 import TemporalDifferenceActor from './temporal-difference'
 import MonteCarloActor from './monte-carlo'
 
-
+// TODO: Fix monte carlo
 const CHICKEN_ALGOS = {
   RANDOM: 'random',
   TEMPORAL_DIFFERENCE: 'temporal difference',
-  MONTE_CARLO: 'monte carlo',
+  // MONTE_CARLO: 'monte carlo',
   GREEDY: 'greedy flight',
   PLAYER: 'player',
 }
 
 const FOX_ALGOS = {
+  // MONTE_CARLO: 'monte carlo',
   TEMPORAL_DIFFERENCE: 'temporal difference',
-  MONTE_CARLO: 'monte carlo',
   A_STAR: 'a* search',
   GREEDY: 'greedy pursuit',
   RANDOM: 'random',
   PLAYER: 'player',
 }
+
+const LEARNING_ALGOS = ['temporal difference']
 
 const chickenActors = {}
 const foxActors = {}
@@ -88,6 +90,7 @@ const buildFoxActor = algo => {
 }
 
 module.exports = {
+  LEARNING_ALGOS,
   CHICKEN_ALGOS,
   FOX_ALGOS,
   getFoxActor,

@@ -1,7 +1,13 @@
 import React, { Component } from 'react'
 
 import C from './constants'
-import { FOX_ALGOS, CHICKEN_ALGOS, getChickenActor, getFoxActor } from './actors'
+import { 
+  LEARNING_ALGOS,
+  FOX_ALGOS,
+  CHICKEN_ALGOS,
+  getChickenActor,
+  getFoxActor
+} from './actors'
 
 
 export default class App extends Component {
@@ -52,6 +58,8 @@ export default class App extends Component {
 
   onSelectChicken = e => {
     const algorithm = e.target.value
+    if (algorithm === this.state.chicken.algorithm) return
+    this.board.setValueActor(null)
     const actor = getChickenActor(algorithm)
     this.setState({ chicken: { games: actor.numGames, actor: actor, algorithm: algorithm }})
     e.target.blur()
@@ -59,6 +67,8 @@ export default class App extends Component {
 
   onSelectFox = e => {
     const algorithm = e.target.value
+    if (algorithm === this.state.fox.algorithm) return
+    this.board.setValueActor(null)
     const actor = getFoxActor(algorithm)
     this.setState({ fox: { games: actor.numGames, actor: actor, algorithm: algorithm }})
     e.target.blur()
@@ -73,25 +83,33 @@ export default class App extends Component {
 
   onTrainingProgress = progress => this.setState({ progress: progress })
   onDoneTraining = () => this.setState({ isTraining: false, progress: 0 })
+  onValues = actor => {
+    // Display value function for that actor
+    this.board.setValueActor(actor)
+  }
 
   render() {
     return (
         <div>
           <ActorPanel
-            label="chicken algorithm"
+            label="chicken"
             onSelect={this.onSelectChicken}
             algorithms={CHICKEN_ALGOS}
             games={this.state.chicken.games}
             onReset={this.state.chicken.actor.reset}
+            onValues={() => this.onValues(this.state.chicken.actor)}
             isTraining={this.state.isTraining}
+            currentType={this.state.chicken.actor.type}
           />
           <ActorPanel
-            label="fox algorithm"
+            label="fox"
             onSelect={this.onSelectFox}
             algorithms={FOX_ALGOS}
             games={this.state.fox.games}
             onReset={this.state.fox.actor.reset}
+            onValues={() => this.onValues(this.state.fox.actor)}
             isTraining={this.state.isTraining}
+            currentType={this.state.fox.actor.type}
           />
           <div className="buttonRow">
             <div className="button" onClick={this.onNewGame} disabled={this.state.isTraining}>
@@ -107,21 +125,31 @@ export default class App extends Component {
   }
 }
 
-const ActorPanel = props => (
+const ActorPanel = ({label, isTraining, algorithms, onReset, onSelect, currentType, games, onValues}) => (
   <div className="control">
-    <label>{props.label}</label>
-    <select onChange={props.onSelect} disabled={props.isTraining}>
-      {Object.values(props.algorithms).map(v =>
+    <label>{label}</label>
+    <select onChange={onSelect} disabled={isTraining}>
+      {Object.values(algorithms).map(v =>
         <option key={v} value={v}>{v}</option>
       )}
     </select>
-    <div className="button" onClick={props.onReset} disabled={props.isTraining}>
+    {isLearning(currentType) && (
+    <div className="button" onClick={onValues} disabled={isTraining}>
+      values
+    </div>
+    )}
+    {isLearning(currentType) && (
+    <div className="button" onClick={onReset} disabled={isTraining}>
       reset
     </div>
-    <span className="games">{displayGames(props.games)} games</span>
+    )}
+    {isLearning(currentType) && <span className="games">{displayGames(games)} games</span>}
+    
   </div>
 )
 
+
+const isLearning = type => LEARNING_ALGOS.includes(type)
 
 const displayGames = games => games > 1000
   ? ((games - (games % 1000)) / 1000) + 'k'

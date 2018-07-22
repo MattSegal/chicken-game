@@ -12,7 +12,7 @@ const displayGrid = baseGrid.getCopy()
 const board = new OnlineGameBoard(displayGrid)
 
 // Draw grid
-View.drawWhenReady(displayGrid)
+View.drawWhenReady(board)
 
 // Draw controls
 ReactDOM.render(<App board={board}/>, document.getElementById('controls'))

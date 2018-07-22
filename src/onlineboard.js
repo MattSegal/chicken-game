@@ -8,8 +8,31 @@ let isTraining = false
 // sends training requests to the web worker thread
 export default class OnlineGameBoard extends GameBoard {
 
+  setValueActor = (actor) => {
+    // Display value function for this actor
+    if (actor === this.valueActor) {
+      this.valueActor = null
+    } else {
+      this.valueActor = actor
+    }
+  }
+
+  getActorValues = () =>  {
+    if (this.foxActor && this.valueActor === this.foxActor) {
+      return this.foxActor.getValues(this.chickenPosition)
+    } else if (this.chickenActor && this.valueActor === this.chickenActor) {
+      return this.chickenActor.getValues(this.foxPosition)
+    } else {
+      this.valueActor = null
+      return null
+    }
+  }
+
   runInterval = () => {
-    this.timerId = setInterval(() => this.run(this.resetInterval), C.TICK)
+    this.timerId = setInterval(() => {
+      // Set new positions for actors
+      this.run(this.resetInterval)
+    }, C.TICK)
   }
 
   resetInterval = () => {
@@ -33,12 +56,10 @@ export default class OnlineGameBoard extends GameBoard {
         chickenActor.deserialize(chickenData)
         onDone()
         isTraining = false
-        console.log('Finished offline training')
       } else {
         onProgress(progress)
       }
     }
-    console.log('Start offline training')
     worker.postMessage({
       chickenData: chickenActor.serialize(),
       foxData: foxActor.serialize(),

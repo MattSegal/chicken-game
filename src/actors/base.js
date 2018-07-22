@@ -35,6 +35,12 @@ export default class Actor {
     this.numGames++
   }
 
+  getValues(targetPosition) {
+    // Get a grid of values for a given target position
+    // normalized from 0 to 1
+    return null
+  }
+
   // Get the 'Manhatten distance' between 2 actors
   static getManhattanDistance(posA, posB) {
     return Math.abs(posA[0] - posB[0]) + Math.abs(posA[1] - posB[1])

@@ -22,7 +22,6 @@ export default class TemporalDifferenceActor extends Actor {
     }
   }
   deserialize(data) {
-    console.log(data)
     this.numGames = data.numGames
     this.states._states = data.states
   }
@@ -42,10 +41,34 @@ export default class TemporalDifferenceActor extends Actor {
     return this
   }
 
+  getValues(targetPosition) {
+    const arr = []
+    const ranking = []
+    // Get a grid of values for a given target position
+    // normalized from 0 to 1
+    for (let a = 0; a < C.BOARD_LENGTH; a++) { // actor row
+    for (let b = 0; b < C.BOARD_LENGTH; b++) { // actor col
+      if (!arr[a]) arr[a] = []
+      const key = this.states.getKey(a, b, targetPosition[0], targetPosition[1]) 
+      const val = this.states.getState(key) .value
+      arr[a].push(val)
+      ranking.push(val)
+    }}
+    // Normalize results to range [0,1]
+    ranking.sort((a,b) => a > b)
+    for (let a = 0; a < C.BOARD_LENGTH; a++) { // actor row
+    for (let b = 0; b < C.BOARD_LENGTH; b++) { // actor col
+      arr[a][b] = ranking.indexOf(arr[a][b]) / (ranking.length - 1)
+    }}
+    return arr
+  }
+
+
   getReward(distance) {
     if (this.isFleeing) {
       // Encourage a fleer to keep away
-      return distance < 5 ? -1 : 1
+      return distance
+      // return distance < 5 ? -1 : 1
     } else {
       // Encourage a follower to close the distance
       return -1 * distance

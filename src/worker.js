@@ -8,7 +8,6 @@ let isTraining = false
 onmessage = e => {
   if (isTraining) return
   isTraining = true
-  console.log('Training with worker')
   const { chickenData, foxData, grid } = e.data
 
   const chickenActor = buildChickenActor(chickenData.type)
@@ -31,7 +30,6 @@ onmessage = e => {
     }
   }
 
-  console.log('Done training with worker')
   postMessage({
     done: true,
     chickenData: chickenActor.serialize(),

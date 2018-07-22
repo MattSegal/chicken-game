@@ -46,9 +46,13 @@ body {
     margin-bottom: 1rem;
 }
 
+.control * +  * {
+    margin-left: 1rem;
+}
+
 .control label {
     font-size: 1.8rem;
-    width: 22rem;
+    width: 11rem;
     text-transform: uppercase;
     color: #555;
 }
@@ -61,7 +65,6 @@ select {
     padding: 7px 15px;
     cursor: pointer;
     text-transform: uppercase;
-    margin-right: 1rem;
 }
 
 select:hover {
