@@ -48,6 +48,7 @@ export default class Actor {
 
   // Get new position given a current position and an action
   static getNewPosition(action, oldPosition) {
+    if (!action) return oldPosition
     return [
       oldPosition[0] + C.VECTORS[action][0],
       oldPosition[1] + C.VECTORS[action][1],
