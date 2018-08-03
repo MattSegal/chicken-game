@@ -34,3 +34,6 @@ make actors objects persistent until explicitly reset
 show number of games player per actor
 
 use a web worker to make training non-blocking
+
+double chicken?
+portals!

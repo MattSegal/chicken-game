@@ -51,7 +51,7 @@ export default class TemporalDifferenceActor extends Actor {
     for (let b = 0; b < C.BOARD_LENGTH; b++) { // actor col
       if (!arr[a]) arr[a] = []
       const key = this.states.getKey(a, b, targetPosition[0], targetPosition[1]) 
-      const val = this.states.getState(key) .value
+      const val = this.states.getState(key).value
       arr[a].push(val)
       ranking.push(val)
     }}
@@ -72,7 +72,13 @@ export default class TemporalDifferenceActor extends Actor {
       // return distance < 5 ? -1 : 1
     } else {
       // Encourage a follower to close the distance
-      return -1 * distance
+      // return -1 * distance
+      if (distance == 1) {
+        console.log('CAUGHT THE CHIKIN')
+        return 1000
+      } else {
+        return 0
+      }
     }
   }
 
