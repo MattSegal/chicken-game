@@ -68,16 +68,17 @@ export default class TemporalDifferenceActor extends Actor {
   getReward(distance) {
     if (this.isFleeing) {
       // Encourage a fleer to keep away
-      return distance
-      // return distance < 5 ? -1 : 1
+      if (distance == 1) {
+        return -1000
+      } else {
+        return 0      
+      }
     } else {
       // Encourage a follower to close the distance
-      // return -1 * distance
       if (distance == 1) {
-        console.log('CAUGHT THE CHIKIN')
         return 1000
       } else {
-        return 0
+        return 0      
       }
     }
   }
