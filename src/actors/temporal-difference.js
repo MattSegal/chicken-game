@@ -1,6 +1,7 @@
 import C from '../constants'
 import Actor from './base'
 import StateSpace from './state-space'
+import { randomChoice } from './utils'
 
 const ALPHA = 0.9
 const GAMMA = 0.9
@@ -50,7 +51,7 @@ export default class TemporalDifferenceActor extends Actor {
     for (let b = 0; b < C.BOARD_LENGTH; b++) { // actor col
       if (!arr[a]) arr[a] = []
       const key = this.states.getKey(a, b, targetPosition[0], targetPosition[1]) 
-      const val = this.states.getState(key) .value
+      const val = this.states.getState(key).value
       arr[a].push(val)
       ranking.push(val)
     }}
@@ -67,23 +68,62 @@ export default class TemporalDifferenceActor extends Actor {
   getReward(distance) {
     if (this.isFleeing) {
       // Encourage a fleer to keep away
-      return distance
-      // return distance < 5 ? -1 : 1
+      if (distance == 1) {
+        return -1000
+      } else {
+        return 0      
+      }
     } else {
       // Encourage a follower to close the distance
-      return -1 * distance
+      if (distance == 1) {
+        return 1000
+      } else {
+        return 0      
+      }
     }
   }
 
   timestep(getActions, resetGame, position, targetPosition) {
+    // Evaluate all possible actions
+    const actions = getActions(position[0], position[1])
+    actions.push(null) // Give the actor the option of not moving
+
+    // We're using e-greedy policy improvement strategy
+    // There is an epsilon chance of randomly picking our next move
+    const epsilon = 1 / Math.sqrt(this.numGames)
+    let chosenAction
+    if (Math.random() < epsilon) {
+      chosenAction = this.chooseActionRandomly(actions)
+    } else {
+      chosenAction = this.chooseActionGreedily(actions, position, targetPosition)
+    }
+    const newPosition = Actor.getNewPosition(chosenAction, position)
+
+    // Using the expected value of our next move, update the value function
+    // with the temporal difference algorithm
+    const distance = Actor.getManhattanDistance(position, targetPosition)
+    const reward = this.getReward(distance)
+    const currentValue = this.states.getStateFromPositions(position, targetPosition).value
+    const expectedValue = this.states.getStateFromPositions(newPosition, targetPosition).value
+    const targetValue = reward + GAMMA * expectedValue
+    const error = targetValue - currentValue
+    const newValue = currentValue + ALPHA * error
+    const currentState = this.states.getStateFromPositions(position, targetPosition)
+    currentState.value = newValue
+
+    return chosenAction
+  }
+
+  chooseActionRandomly(actions) {
+    return randomChoice(actions)
+  }
+
+  chooseActionGreedily(actions, position, targetPosition) {
     // Using the current value function, greedily choose where we're going to go next
     let bestAction = null
     let bestValue = Number.NEGATIVE_INFINITY
     let newPosition = position
 
-    // Evaluate all possible actions
-    const actions = getActions(position[0], position[1])
-    actions.push(null) // Give the actor the option of not moving
     for (let action of actions) {
       // Find the actor's new position given the action
       let actionPosition
@@ -101,20 +141,6 @@ export default class TemporalDifferenceActor extends Actor {
         newPosition = actionPosition
       }
     }
-
-    // Using the expected value of our next move, update the value function
-    // with the temporal difference algorithm
-    const distance = Actor.getManhattanDistance(position, targetPosition)
-    const reward = this.getReward(distance)
-    const currentValue = this.states.getStateFromPositions(position, targetPosition).value
-    const expectedValue = this.states.getStateFromPositions(newPosition, targetPosition).value
-    const targetValue = reward + GAMMA * expectedValue
-    const error = targetValue - currentValue
-    const newValue = currentValue + ALPHA * error
-    const currentState = this.states.getStateFromPositions(position, targetPosition)
-    currentState.value = newValue
-
-    // Perform the best known action
     return bestAction
   }
 }

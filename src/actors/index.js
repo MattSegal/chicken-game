@@ -8,10 +8,10 @@ import MonteCarloActor from './monte-carlo'
 
 // TODO: Fix monte carlo
 const CHICKEN_ALGOS = {
-  RANDOM: 'random',
-  TEMPORAL_DIFFERENCE: 'temporal difference',
-  // MONTE_CARLO: 'monte carlo',
   GREEDY: 'greedy flight',
+  TEMPORAL_DIFFERENCE: 'temporal difference',
+  RANDOM: 'random',
+  // MONTE_CARLO: 'monte carlo',
   PLAYER: 'player',
 }
 
@@ -24,7 +24,10 @@ const FOX_ALGOS = {
   PLAYER: 'player',
 }
 
-const LEARNING_ALGOS = ['temporal difference']
+const LEARNING_ALGOS = [
+  'temporal difference',
+  // 'monte carlo'
+]
 
 const chickenActors = {}
 const foxActors = {}

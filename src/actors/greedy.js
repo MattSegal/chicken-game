@@ -33,38 +33,24 @@ export default class GreedyActor extends Actor {
     const targetRow = targetPosition[0]
     const targetCol = targetPosition[1]
 
-    const actions = getActions(row, col)
-    const seen = new Set()
+    const goUp = this.isFollowing ? row > targetRow : row <= targetRow
+    const goDown = this.isFollowing ? row < targetRow : row >= targetRow
+    const goRight = this.isFollowing ? col < targetCol : col >= targetCol
+    const goLeft = this.isFollowing ? col > targetCol : col <= targetCol
 
-    let chosenAction = null
-    let iter = 0
-    while (!chosenAction) {
-      iter++
-      if (iter > 100) {
-        console.warn('GreedyActor is too tired to continue.')
-        resetGame()
-        return
-      }
-      const action = randomChoice(actions)
-      const chooseGreedily = (
-        (action === C.ACTIONS.NORTH && row > targetRow) ||
-        (action === C.ACTIONS.SOUTH && row < targetRow) ||
-        (action === C.ACTIONS.EAST && col < targetCol) ||
-        (action === C.ACTIONS.WEST && col > targetCol)
-      )
-      if (chooseGreedily) {
-        if (this.isFollowing) {
-          chosenAction = action
-        } else if (actions.includes(OPPOSITE[action])) {
-          chosenAction = OPPOSITE[action]
-        }
-      }
-      seen.add(action)
-      if (seen.size >= actions.length) {
-        // Choose a random action if there are no greedy options
-        chosenAction = action
-      }
+    const actions = getActions(row, col)
+
+    const chosenActions = []
+
+    if (goLeft && actions.includes(C.ACTIONS.WEST)) chosenActions.push(C.ACTIONS.WEST)
+    if (goRight && actions.includes(C.ACTIONS.EAST)) chosenActions.push(C.ACTIONS.EAST)
+    if (goUp && actions.includes(C.ACTIONS.NORTH)) chosenActions.push(C.ACTIONS.NORTH)
+    if (goDown && actions.includes(C.ACTIONS.SOUTH)) chosenActions.push(C.ACTIONS.SOUTH)
+
+    if (chosenActions.length < 1) {
+      return randomChoice(actions)
+    } else {
+      return randomChoice(chosenActions)
     }
-    return chosenAction
   }
 }
