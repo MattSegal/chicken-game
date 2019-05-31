@@ -1,30 +1,44 @@
-import Actor from './base'
+// @flow
+import { Actor } from './base'
+import type {
+  Sprite,
+  Action,
+  Vector,
+  ActorMessage,
+  Actor as ActorType,
+  Grid,
+  ActorType as ActorTypeType, // I regret nothing
+} from '../types'
 
-const MOVES = {
-  ArrowDown: 'SOUTH',
-  ArrowUp: 'NORTH',
-  ArrowLeft: 'WEST',
-  ArrowRight: 'EAST',
-  s: 'SOUTH',
-  w: 'NORTH',
-  a: 'WEST',
-  d: 'EAST',
+const MOVES: { [string]: Action } = {
+  ArrowDown: 'S',
+  ArrowUp: 'N',
+  ArrowLeft: 'W',
+  ArrowRight: 'E',
+  s: 'S',
+  w: 'N',
+  a: 'W',
+  d: 'E',
 }
 
 // Allows player to control the actor
 export default class PlayerActor extends Actor {
-
-  constructor(value) {
-    super(value)
+  chosenNextAction: Action
+  constructor(sprite: Sprite, type: ActorTypeType) {
+    super(sprite, type)
     this.chosenNextAction = null
-    document.addEventListener('keydown', e => {
-      this.chosenNextAction = MOVES[e.key] || null
-    })
+    // @noflow
+    document.addEventListener('keydown', this.onKeyDown)
   }
 
-  timestep(getActions, resetGame, position, targetPosition) {
+  onKeyDown = (e: SyntheticKeyboardEvent<any>) => {
+    this.chosenNextAction = MOVES[e.key] || null
+  }
+
+  onTimestep(grid: Grid, targetPosition: Vector): Action {
+    const actions = this.getAvailableActions(grid, this.position)
     let nextAction = null
-    if (getActions(position[0], position[1]).includes(this.chosenNextAction)) {
+    if (actions.includes(this.chosenNextAction)) {
       nextAction = this.chosenNextAction
       this.chosenNextAction = null
     }

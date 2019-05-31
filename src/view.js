@@ -1,107 +1,96 @@
-import C from './constants'
-import ColorWheel from './colors'
+// @flow
+import { BOARD, SPRITES } from './constants'
+import { ColorWheel, buildImage, loadImage } from './utils'
+import { GameBoard } from './types'
+
+// Sprite
+const SRC_LENGTH = 256 // px
+const PADDING = 5 // px
+const TREE_IMAGE = buildImage('./static/tree.png')
+const FOX_IMAGE = buildImage('./static/fox.png')
+const CHICKEN_IMAGE = buildImage('./static/chicken.png')
+const SPRITE_IMAGES = [TREE_IMAGE, FOX_IMAGE, CHICKEN_IMAGE]
 
 const colorWheel = new ColorWheel(Math.PI / 9, 0.25, 0.9)
 
-const getImage =src => {
-  const img = new Image();
-  img.src = src
-  return img
-}
-const loadImage =img => new Promise((fulfill, reject) => {
-  img.onload = () => fulfill(img)
-})
-
-
-const treeImage = getImage('./static/tree.png')
-const foxImage = getImage('./static/fox.png')
-const chickenImage = getImage('./static/chicken.png')
-
-const canvas = document.getElementById('gameboard')
+// Get canvas and context
+// @noflow
+const canvas: HTMLCanvasElement = document.getElementById('gameboard')
+const ctx = canvas.getContext('2d')
 canvas.width = canvas.clientWidth
 canvas.height = canvas.clientHeight
-
-window.addEventListener('resize', () => {
+const onResize = () => {
   canvas.width = canvas.clientWidth
   canvas.height = canvas.clientHeight
-}, false)
+}
+window.addEventListener('resize', onResize, false)
 
-const ctx = canvas.getContext('2d')
+export const drawWhenReady = (board: GameBoard) => {
+  Promise.all(SPRITE_IMAGES.map(loadImage)).then(() => drawLoop(board))
+}
 
-export default class View {
+export const drawLoop = (board: GameBoard) => {
+  drawGridSquares(board)
+  requestAnimationFrame(() => drawLoop(board))
+}
 
-  static drawWhenReady(board) {
-    View.onImagesLoaded().then(() => View.drawLoop(board))
+const drawGridSquares = (board: GameBoard) => {
+  // Draw the value function values if available.
+  let valueGrid = null
+  if (board.valuesDisplay !== null) {
+    const actor = board.actors[board.valuesDisplay]
+    const opponentIdx = 1 - board.valuesDisplay
+    const opponent = board.actors[opponentIdx]
+    valueGrid = actor.getValues(opponent.position)
+    if (valueGrid) drawValueGrid(valueGrid)
   }
-
-  static drawLoop(board) {
-    View.drawGridSquares(board)
-    requestAnimationFrame(() => View.drawLoop(board))
-  }
-
-  static onImagesLoaded() {
-    return Promise.all([
-      loadImage(treeImage),
-      loadImage(foxImage),
-      loadImage(chickenImage),
-    ])
-  }
-
-  static getSquareLength() {
-    return canvas.width / C.BOARD_LENGTH
-  }
-
-  static drawGridSquares(board) {
-    const grid = board.grid
-    const actorValues = board.getActorValues()
-    if (actorValues) {
-      for (let i = 0; i < actorValues.length; i++) {
-        for (let j = 0; j < actorValues[i].length; j++) {
-          View.drawValue(i, j, actorValues[i][j])
-        }
+  // Draw the sprites
+  const grid = board.grid
+  for (let i = 0; i < grid.length; i++) {
+    for (let j = 0; j < grid[i].length; j++) {
+      if (grid[i][j] === SPRITES.FOX) {
+        drawSprite(FOX_IMAGE, i, j)
+      } else if (grid[i][j] === SPRITES.CHICKEN) {
+        drawSprite(CHICKEN_IMAGE, i, j)
+      } else if (grid[i][j] === SPRITES.TREE) {
+        drawSprite(TREE_IMAGE, i, j)
+      } else if (!valueGrid) {
+        clearSquare(i, j)
       }
     }
-
-    for (let i = 0; i < grid.length; i++) {
-      for (let j = 0; j < grid[i].length; j++) {
-        if (grid[i][j] === C.FOX) {
-          View.drawSprite(foxImage, i, j)
-        } else if (grid[i][j] === C.CHICKEN) {
-          View.drawSprite(chickenImage, i, j)
-        } else if (grid[i][j] === C.TREE) {
-          View.drawSprite(treeImage, i, j)
-        } else if (!actorValues) {
-          View.clearSquare(i, j)
-        }
-      }
-    }
-  }
-
-  static drawValue(row, col, val) {
-    const squareLength = View.getSquareLength()
-    const x = (col * squareLength) + C.PADDING
-    const y = (row * squareLength) + C.PADDING
-    const length = squareLength - (2 * C.PADDING)
-    ctx.fillStyle = colorWheel.rotate(val * 3 * Math.PI / 5).asCSS()
-    ctx.fillRect(x, y, length, length)
-  }
-
-  static drawSprite(img, row, col) {
-    const squareLength = View.getSquareLength()
-    const x = (col * squareLength) + C.PADDING
-    const y = (row * squareLength) + C.PADDING
-    const length = squareLength - (2 * C.PADDING)
-    ctx.drawImage(
-      img,
-      0, 0, C.SRC_LENGTH, C.SRC_LENGTH,
-      x, y, length, length
-    )
-  }
-
-  static clearSquare(row, col) {
-    const squareLength = View.getSquareLength()
-    const x = (col * squareLength)
-    const y = (row * squareLength)
-    ctx.clearRect(x, y, squareLength, squareLength)
   }
 }
+
+const drawValueGrid = (values: Array<Array<number>>) => {
+  for (let i = 0; i < values.length; i++) {
+    for (let j = 0; j < values[i].length; j++) {
+      drawValue(i, j, values[i][j])
+    }
+  }
+}
+
+const drawValue = (row, col, val) => {
+  const squareLength = getSquareLength()
+  const x = col * squareLength + PADDING
+  const y = row * squareLength + PADDING
+  const length = squareLength - 2 * PADDING
+  ctx.fillStyle = colorWheel.rotate((val * 3 * Math.PI) / 5).asCSS()
+  ctx.fillRect(x, y, length, length)
+}
+
+const drawSprite = (img: Image, row, col) => {
+  const squareLength = getSquareLength()
+  const x = col * squareLength + PADDING
+  const y = row * squareLength + PADDING
+  const length = squareLength - 2 * PADDING
+  ctx.drawImage(img, 0, 0, SRC_LENGTH, SRC_LENGTH, x, y, length, length)
+}
+
+const clearSquare = (row, col) => {
+  const squareLength = getSquareLength()
+  const x = col * squareLength
+  const y = row * squareLength
+  ctx.clearRect(x, y, squareLength, squareLength)
+}
+
+const getSquareLength = () => canvas.width / BOARD.BOARD_LENGTH

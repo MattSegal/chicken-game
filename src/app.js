@@ -1,156 +1,175 @@
+// @flow
 import React, { Component } from 'react'
 
-import C from './constants'
-import { 
-  LEARNING_ALGOS,
-  FOX_ALGOS,
-  CHICKEN_ALGOS,
-  getChickenActor,
-  getFoxActor
-} from './actors'
+import * as Grid from './grid'
+import * as View from './view'
+import { GameBoard } from './board'
+import Worker from './worker'
+import { buildActor, CHICKEN_ALGOS, FOX_ALGOS } from './actors'
+import type {
+  GameBoard as GameBoardType,
+  Grid as GridType,
+  Actor,
+  ActorType,
+} from './types'
 
+const worker = new Worker()
 
-export default class App extends Component {
+const UPDATE_TICK = 500 // ms
 
-  constructor(props) {
+type Props = {}
+type State = {
+  isTraining: boolean,
+  progress: number,
+  games: Array<number>,
+}
+
+const ACTOR_DATA = [
+  {
+    label: 'chicken',
+    algos: CHICKEN_ALGOS,
+  },
+  {
+    label: 'fox',
+    algos: FOX_ALGOS,
+  },
+]
+
+export class App extends Component<Props, State> {
+  board: GameBoardType
+  grid: GridType
+  // Setup actors, board, view
+  constructor(props: Props) {
     super(props)
-    this.board = props.board
-    const foxAlgorithm = Object.values(FOX_ALGOS)[0]
-    const chickenAlgorithm = Object.values(CHICKEN_ALGOS)[0]
-    const foxActor = getFoxActor(foxAlgorithm)
-    const chickenActor = getChickenActor(chickenAlgorithm)
-    this.board.addChicken(chickenActor)
-    this.board.addFox(foxActor)
-    this.board.runInterval()
+    this.grid = Grid.create()
+    const chicken = buildActor('CHICKEN_TEMPORAL_DIFFERENCE')
+    const fox = buildActor('FOX_GREEDY')
+    this.board = new GameBoard(this.grid, [chicken, fox], worker)
+    View.drawWhenReady(this.board)
+    this.board.runGame()
     this.state = {
       isTraining: false,
       progress: 0,
-      chicken: {
-        games: 0,
-        actor: chickenActor,
-        algorithm: chickenAlgorithm,
-      },
-      fox: {
-        games: 0,
-        actor: foxActor,
-        algorithm: foxAlgorithm,
-      }
+      games: [0, 0],
     }
   }
-
+  // Ensure the number of games played updates.
   componentDidMount() {
     setInterval(() => {
-      this.setState({
-        ...this.state,
-        chicken: {...this.state.chicken, games: this.state.chicken.actor.numGames},
-        fox: {...this.state.fox, games: this.state.fox.actor.numGames}
-      })
-    }, 500)
+      this.setState({ games: this.board.getGamesPlayed() })
+    }, UPDATE_TICK)
   }
-
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    if (this.state.chicken.algorithm !== prevState.chicken.algorithm) {
-      this.board.addChicken(this.state.chicken.actor)
-    } else if (this.state.fox.algorithm !== prevState.fox.algorithm) {
-      this.board.addFox(this.state.fox.actor)
+  // When a user selects a new actor type from the drop-down.
+  onSelectActorType = (idx: number) => (e: SyntheticInputEvent<any>) => {
+    // @noflow
+    const actorType: ActorType = e.target.value
+    // @noflow
+    const created = this.board.selectActor(idx, actorType)
+    e.target.blur()
+    if (created) {
+      const games = [...this.state.games]
+      games[idx] = 0
+      this.setState({ games })
     }
   }
-
-  onSelectChicken = e => {
-    const algorithm = e.target.value
-    if (algorithm === this.state.chicken.algorithm) return
-    this.board.setValueActor(null)
-    const actor = getChickenActor(algorithm)
-    this.setState({ chicken: { games: actor.numGames, actor: actor, algorithm: algorithm }})
-    e.target.blur()
-  }
-
-  onSelectFox = e => {
-    const algorithm = e.target.value
-    if (algorithm === this.state.fox.algorithm) return
-    this.board.setValueActor(null)
-    const actor = getFoxActor(algorithm)
-    this.setState({ fox: { games: actor.numGames, actor: actor, algorithm: algorithm }})
-    e.target.blur()
-  }
-
-  onNewGame = e => this.board.reset()
-
-  onTrain = e => {
+  // When the user hits the new game button.
+  onNewGame = () => this.board.newGame()
+  // When the user hits the "train" button
+  onTrain = () => {
+    if (this.state.isTraining || !this.board.getCanTrain()) return
     this.setState({ isTraining: true })
-    this.board.train(this.onTrainingProgress, this.onDoneTraining)
+    this.board.trainActors(this.onTrainingProgress, this.onDoneTraining)
   }
-
-  onTrainingProgress = progress => this.setState({ progress: progress })
+  // Callback for when training is progressing.
+  onTrainingProgress = (progress: number) => this.setState({ progress })
+  // Callback for when training is finished.
   onDoneTraining = () => this.setState({ isTraining: false, progress: 0 })
-  onValues = actor => {
-    // Display value function for that actor
-    this.board.setValueActor(actor)
-  }
-
+  // Visualize actor value function
   render() {
+    const { isTraining, games, progress } = this.state
     return (
-        <div>
+      <React.Fragment>
+        {this.board.actors.map((actor, idx) => (
           <ActorPanel
-            label="chicken"
-            onSelect={this.onSelectChicken}
-            algorithms={CHICKEN_ALGOS}
-            games={this.state.chicken.games}
-            onReset={this.state.chicken.actor.reset}
-            onValues={() => this.onValues(this.state.chicken.actor)}
-            isTraining={this.state.isTraining}
-            currentType={this.state.chicken.actor.type}
+            key={idx}
+            label={ACTOR_DATA[idx].label}
+            algorithms={ACTOR_DATA[idx].algos}
+            games={games[idx]}
+            isTraining={isTraining}
+            currentType={actor.type}
+            onReset={() => this.board.resetActor(idx)}
+            hasValues={this.board.actors[idx].hasValues}
+            onValues={() => this.board.toggleValueDisplay(idx)}
+            onSelect={this.onSelectActorType(idx)}
           />
-          <ActorPanel
-            label="fox"
-            onSelect={this.onSelectFox}
-            algorithms={FOX_ALGOS}
-            games={this.state.fox.games}
-            onReset={this.state.fox.actor.reset}
-            onValues={() => this.onValues(this.state.fox.actor)}
-            isTraining={this.state.isTraining}
-            currentType={this.state.fox.actor.type}
-          />
-          <div className="buttonRow">
-            <div className="button" onClick={this.onNewGame} disabled={this.state.isTraining}>
-              new game
-            </div>
-            <div className="button" onClick={this.onTrain} disabled={this.state.isTraining}>
-              <div className="progress" style={{'right': `${100 - this.state.progress}%`}}></div>
-              train
-            </div>
+        ))}
+        <div className="buttonRow">
+          <div
+            className="button"
+            onClick={this.onNewGame}
+            disabled={isTraining}
+          >
+            new game
+          </div>
+          <div
+            className="button"
+            onClick={this.onTrain}
+            disabled={isTraining || !this.board.getCanTrain()}
+          >
+            <div className="progress" style={{ right: `${100 - progress}%` }} />
+            train
           </div>
         </div>
+      </React.Fragment>
     )
   }
 }
 
-const ActorPanel = ({label, isTraining, algorithms, onReset, onSelect, currentType, games, onValues}) => (
+type PanelProps = {
+  label: string,
+  isTraining: boolean,
+  algorithms: { [ActorType]: string },
+  currentType: ActorType,
+  games: number,
+  hasValues: boolean,
+  onValues: Function,
+  onReset: Function,
+  onSelect: Function,
+}
+
+const ActorPanel = ({
+  label,
+  isTraining,
+  algorithms,
+  currentType,
+  games,
+  onReset,
+  onSelect,
+  onValues,
+  hasValues,
+}: PanelProps) => (
   <div className="control">
     <label>{label}</label>
     <select onChange={onSelect} disabled={isTraining}>
-      {Object.values(algorithms).map(v =>
-        <option key={v} value={v}>{v}</option>
-      )}
+      {Object.entries(algorithms).map(([k, v]) => (
+        <option key={k} value={k}>
+          {String(v)}
+        </option>
+      ))}
     </select>
-    {isLearning(currentType) && (
-    <div className="button" onClick={onValues} disabled={isTraining}>
-      values
-    </div>
+    {hasValues && (
+      <div className="button" onClick={onValues} disabled={isTraining}>
+        values
+      </div>
     )}
-    {isLearning(currentType) && (
-    <div className="button" onClick={onReset} disabled={isTraining}>
-      reset
-    </div>
+    {hasValues && (
+      <div className="button" onClick={onReset} disabled={isTraining}>
+        reset
+      </div>
     )}
-    {isLearning(currentType) && <span className="games">{displayGames(games)} games</span>}
-    
+    {hasValues && <span className="games">{displayGames(games)} games</span>}
   </div>
 )
 
-
-const isLearning = type => LEARNING_ALGOS.includes(type)
-
-const displayGames = games => games > 1000
-  ? ((games - (games % 1000)) / 1000) + 'k'
-  : games
+const displayGames = games =>
+  games > 1000 ? (games - (games % 1000)) / 1000 + 'k' : games

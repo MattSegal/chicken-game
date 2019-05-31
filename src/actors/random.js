@@ -1,9 +1,12 @@
-import Actor from './base'
-import { randomChoice } from './utils'
+// @flow
+import { Actor } from './base'
+import { randomChoice } from '../utils'
+import type { Vector, Action, Grid } from '../types'
 
 // Totally random actor
 export default class RandomActor extends Actor {
-  timestep(getActions, resetGame, position, targetPosition) {
-    return randomChoice(getActions(position[0], position[1]))
+  onTimestep(grid: Grid, targetPosition: Vector): Action {
+    const actions = this.getAvailableActions(grid, this.position)
+    return randomChoice(actions)
   }
 }

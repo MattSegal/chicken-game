@@ -1,103 +1,55 @@
-import C from '../constants'
+// @flow
+import { SPRITES } from '../constants'
 import PlayerActor from './player'
 import GreedyActor from './greedy'
 import RandomActor from './random'
 import AStarActor from './a-star'
 import TemporalDifferenceActor from './temporal-difference'
-import MonteCarloActor from './monte-carlo'
+// import MonteCarloActor from './monte-carlo'
+import type { ActorType, Actor } from '../types'
 
-// TODO: Fix monte carlo
-const CHICKEN_ALGOS = {
-  GREEDY: 'greedy flight',
-  TEMPORAL_DIFFERENCE: 'temporal difference',
-  RANDOM: 'random',
+export const CHICKEN_ALGOS: { [ActorType]: string } = {
+  CHICKEN_TEMPORAL_DIFFERENCE: 'temporal difference',
+  // CHICKEN_MONTE_CARLO: 'monte carlo',
+  CHICKEN_RANDOM: 'random',
+  CHICKEN_GREEDY: 'greedy',
+  CHICKEN_PLAYER: 'player',
+}
+
+export const FOX_ALGOS: { [ActorType]: string } = {
+  FOX_GREEDY: 'greedy',
+  FOX_TEMPORAL_DIFFERENCE: 'temporal difference',
   // MONTE_CARLO: 'monte carlo',
-  PLAYER: 'player',
+  FOX_RANDOM: 'random',
+  FOX_PLAYER: 'player',
+  FOX_A_STAR: 'a* search',
 }
 
-const FOX_ALGOS = {
-  // MONTE_CARLO: 'monte carlo',
-  TEMPORAL_DIFFERENCE: 'temporal difference',
-  A_STAR: 'a* search',
-  GREEDY: 'greedy pursuit',
-  RANDOM: 'random',
-  PLAYER: 'player',
-}
-
-const LEARNING_ALGOS = [
-  'temporal difference',
-  // 'monte carlo'
-]
-
-const chickenActors = {}
-const foxActors = {}
-
-const getChickenActor = algo => {
-  const cachedActor = chickenActors[algo]
-  if (cachedActor) {
-    return cachedActor
-  } else {
-    const newActor = buildChickenActor(algo)
-    newActor.type = algo
-    chickenActors[algo] = newActor
-    return newActor
-  }
-}
-
-const getFoxActor = algo => {
-  const cachedActor = foxActors[algo]
-  if (cachedActor) {
-    return cachedActor
-  } else {
-    const newActor = buildFoxActor(algo)
-    newActor.type = algo
-    foxActors[algo] = newActor
-    return newActor
-  }
-}
-
-const buildChickenActor = algo => {
-  switch(algo) {
-    case CHICKEN_ALGOS.TEMPORAL_DIFFERENCE:
-      return (new TemporalDifferenceActor(C.CHICKEN)).flee()
-    case CHICKEN_ALGOS.MONTE_CARLO:
-      return (new MonteCarloActor(C.CHICKEN)).flee()
-    case CHICKEN_ALGOS.RANDOM:
-      return new RandomActor(C.CHICKEN)
-    case CHICKEN_ALGOS.PLAYER:
-      return new PlayerActor(C.CHICKEN)
-    case CHICKEN_ALGOS.GREEDY:
-      return (new GreedyActor(C.CHICKEN)).flee()
+export const buildActor = (type: ActorType): Actor => {
+  switch (type) {
+    // case 'CHICKEN_MONTE_CARLO':
+    // return new MonteCarloActor(SPRITES.CHICKEN, type)
+    // case 'FOX_MONTE_CARLO':
+    // return new MonteCarloActor(SPRITES.FOX, type)
+    case 'CHICKEN_TEMPORAL_DIFFERENCE':
+      return new TemporalDifferenceActor(SPRITES.CHICKEN, type)
+    case 'FOX_TEMPORAL_DIFFERENCE':
+      return new TemporalDifferenceActor(SPRITES.FOX, type)
+    case 'CHICKEN_RANDOM':
+      return new RandomActor(SPRITES.CHICKEN, type)
+    case 'FOX_RANDOM':
+      return new RandomActor(SPRITES.FOX, type)
+    case 'FOX_GREEDY':
+      return new GreedyActor(SPRITES.FOX, type)
+    case 'CHICKEN_GREEDY':
+      return new GreedyActor(SPRITES.CHICKEN, type)
+    case 'CHICKEN_PLAYER':
+      return new PlayerActor(SPRITES.CHICKEN, type)
+    case 'FOX_PLAYER':
+      return new PlayerActor(SPRITES.FOX, type)
+    case 'FOX_A_STAR':
+      return new AStarActor(SPRITES.FOX, type)
     default:
-      throw Error(`Algorithm ${algo} not recognized for chicken`)
+      throw Error(`Actor type ${type} not recognized`)
   }
-}
-
-const buildFoxActor = algo => {
-  switch(algo) {
-    case FOX_ALGOS.TEMPORAL_DIFFERENCE:
-      return (new TemporalDifferenceActor(C.FOX)).follow()
-    case FOX_ALGOS.MONTE_CARLO:
-      return (new MonteCarloActor(C.FOX)).follow()
-    case FOX_ALGOS.A_STAR:
-      return new AStarActor(C.FOX)
-    case FOX_ALGOS.RANDOM:
-      return new RandomActor(C.FOX)
-    case FOX_ALGOS.PLAYER:
-      return new PlayerActor(C.FOX)
-    case FOX_ALGOS.GREEDY:
-      return (new GreedyActor(C.FOX)).follow()
-    default:
-      throw Error(`Algorithm ${algo} not recognized for fox`)
-  }
-}
-
-module.exports = {
-  LEARNING_ALGOS,
-  CHICKEN_ALGOS,
-  FOX_ALGOS,
-  getFoxActor,
-  getChickenActor,
-  buildChickenActor,
-  buildFoxActor,
 }
