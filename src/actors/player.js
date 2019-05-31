@@ -13,7 +13,6 @@ const MOVES = {
 
 // Allows player to control the actor
 export default class PlayerActor extends Actor {
-
   constructor(value) {
     super(value)
     this.chosenNextAction = null

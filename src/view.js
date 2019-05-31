@@ -3,15 +3,15 @@ import ColorWheel from './colors'
 
 const colorWheel = new ColorWheel(Math.PI / 9, 0.25, 0.9)
 
-const getImage =src => {
-  const img = new Image();
+const getImage = src => {
+  const img = new Image()
   img.src = src
   return img
 }
-const loadImage =img => new Promise((fulfill, reject) => {
-  img.onload = () => fulfill(img)
-})
-
+const loadImage = img =>
+  new Promise((fulfill, reject) => {
+    img.onload = () => fulfill(img)
+  })
 
 const treeImage = getImage('./static/tree.png')
 const foxImage = getImage('./static/fox.png')
@@ -21,15 +21,18 @@ const canvas = document.getElementById('gameboard')
 canvas.width = canvas.clientWidth
 canvas.height = canvas.clientHeight
 
-window.addEventListener('resize', () => {
-  canvas.width = canvas.clientWidth
-  canvas.height = canvas.clientHeight
-}, false)
+window.addEventListener(
+  'resize',
+  () => {
+    canvas.width = canvas.clientWidth
+    canvas.height = canvas.clientHeight
+  },
+  false
+)
 
 const ctx = canvas.getContext('2d')
 
 export default class View {
-
   static drawWhenReady(board) {
     View.onImagesLoaded().then(() => View.drawLoop(board))
   }
@@ -79,29 +82,25 @@ export default class View {
 
   static drawValue(row, col, val) {
     const squareLength = View.getSquareLength()
-    const x = (col * squareLength) + C.PADDING
-    const y = (row * squareLength) + C.PADDING
-    const length = squareLength - (2 * C.PADDING)
-    ctx.fillStyle = colorWheel.rotate(val * 3 * Math.PI / 5).asCSS()
+    const x = col * squareLength + C.PADDING
+    const y = row * squareLength + C.PADDING
+    const length = squareLength - 2 * C.PADDING
+    ctx.fillStyle = colorWheel.rotate((val * 3 * Math.PI) / 5).asCSS()
     ctx.fillRect(x, y, length, length)
   }
 
   static drawSprite(img, row, col) {
     const squareLength = View.getSquareLength()
-    const x = (col * squareLength) + C.PADDING
-    const y = (row * squareLength) + C.PADDING
-    const length = squareLength - (2 * C.PADDING)
-    ctx.drawImage(
-      img,
-      0, 0, C.SRC_LENGTH, C.SRC_LENGTH,
-      x, y, length, length
-    )
+    const x = col * squareLength + C.PADDING
+    const y = row * squareLength + C.PADDING
+    const length = squareLength - 2 * C.PADDING
+    ctx.drawImage(img, 0, 0, C.SRC_LENGTH, C.SRC_LENGTH, x, y, length, length)
   }
 
   static clearSquare(row, col) {
     const squareLength = View.getSquareLength()
-    const x = (col * squareLength)
-    const y = (row * squareLength)
+    const x = col * squareLength
+    const y = row * squareLength
     ctx.clearRect(x, y, squareLength, squareLength)
   }
 }

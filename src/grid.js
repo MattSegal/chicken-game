@@ -2,7 +2,9 @@ import C from './constants'
 
 export default class Grid {
   constructor() {
-    this._grid = Array(C.BOARD_LENGTH).fill(0).map(fillRow)
+    this._grid = Array(C.BOARD_LENGTH)
+      .fill(0)
+      .map(fillRow)
   }
 
   getCopy() {
@@ -10,5 +12,8 @@ export default class Grid {
   }
 }
 
-const fillCol = () => Math.random() > C.TREE_DENSITY ? C.EMPTY : C.TREE
-const fillRow = () => Array(C.BOARD_LENGTH).fill(0).map(fillCol)
+const fillCol = () => (Math.random() > C.TREE_DENSITY ? C.EMPTY : C.TREE)
+const fillRow = () =>
+  Array(C.BOARD_LENGTH)
+    .fill(0)
+    .map(fillCol)

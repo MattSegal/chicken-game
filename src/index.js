@@ -15,4 +15,4 @@ const board = new OnlineGameBoard(displayGrid)
 View.drawWhenReady(board)
 
 // Draw controls
-ReactDOM.render(<App board={board}/>, document.getElementById('controls'))
+ReactDOM.render(<App board={board} />, document.getElementById('controls'))

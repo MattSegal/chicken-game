@@ -1,9 +1,8 @@
-
 export default {
   // Game constants
   BOARD_LENGTH: 14, // squares
-  MAX_LENGTH: 900,  // px
-  TICK: 180,  // ms
+  MAX_LENGTH: 900, // px
+  TICK: 180, // ms
   TRAINING_STEPS: 1000 * 1000, // 10e6 steps
   LOGGING: false,
   TREE_DENSITY: 0.15,

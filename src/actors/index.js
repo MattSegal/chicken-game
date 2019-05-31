@@ -57,28 +57,28 @@ const getFoxActor = algo => {
 }
 
 const buildChickenActor = algo => {
-  switch(algo) {
+  switch (algo) {
     case CHICKEN_ALGOS.TEMPORAL_DIFFERENCE:
-      return (new TemporalDifferenceActor(C.CHICKEN)).flee()
+      return new TemporalDifferenceActor(C.CHICKEN).flee()
     case CHICKEN_ALGOS.MONTE_CARLO:
-      return (new MonteCarloActor(C.CHICKEN)).flee()
+      return new MonteCarloActor(C.CHICKEN).flee()
     case CHICKEN_ALGOS.RANDOM:
       return new RandomActor(C.CHICKEN)
     case CHICKEN_ALGOS.PLAYER:
       return new PlayerActor(C.CHICKEN)
     case CHICKEN_ALGOS.GREEDY:
-      return (new GreedyActor(C.CHICKEN)).flee()
+      return new GreedyActor(C.CHICKEN).flee()
     default:
       throw Error(`Algorithm ${algo} not recognized for chicken`)
   }
 }
 
 const buildFoxActor = algo => {
-  switch(algo) {
+  switch (algo) {
     case FOX_ALGOS.TEMPORAL_DIFFERENCE:
-      return (new TemporalDifferenceActor(C.FOX)).follow()
+      return new TemporalDifferenceActor(C.FOX).follow()
     case FOX_ALGOS.MONTE_CARLO:
-      return (new MonteCarloActor(C.FOX)).follow()
+      return new MonteCarloActor(C.FOX).follow()
     case FOX_ALGOS.A_STAR:
       return new AStarActor(C.FOX)
     case FOX_ALGOS.RANDOM:
@@ -86,7 +86,7 @@ const buildFoxActor = algo => {
     case FOX_ALGOS.PLAYER:
       return new PlayerActor(C.FOX)
     case FOX_ALGOS.GREEDY:
-      return (new GreedyActor(C.FOX)).follow()
+      return new GreedyActor(C.FOX).follow()
     default:
       throw Error(`Algorithm ${algo} not recognized for fox`)
   }

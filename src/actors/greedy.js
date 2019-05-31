@@ -9,9 +9,7 @@ const OPPOSITE = {
   [C.ACTIONS.WEST]: C.ACTIONS.EAST,
 }
 
-
 export default class GreedyActor extends Actor {
-
   constructor(name, value, board) {
     super(name, value, board)
     this.isFollowing = true
@@ -42,10 +40,14 @@ export default class GreedyActor extends Actor {
 
     const chosenActions = []
 
-    if (goLeft && actions.includes(C.ACTIONS.WEST)) chosenActions.push(C.ACTIONS.WEST)
-    if (goRight && actions.includes(C.ACTIONS.EAST)) chosenActions.push(C.ACTIONS.EAST)
-    if (goUp && actions.includes(C.ACTIONS.NORTH)) chosenActions.push(C.ACTIONS.NORTH)
-    if (goDown && actions.includes(C.ACTIONS.SOUTH)) chosenActions.push(C.ACTIONS.SOUTH)
+    if (goLeft && actions.includes(C.ACTIONS.WEST))
+      chosenActions.push(C.ACTIONS.WEST)
+    if (goRight && actions.includes(C.ACTIONS.EAST))
+      chosenActions.push(C.ACTIONS.EAST)
+    if (goUp && actions.includes(C.ACTIONS.NORTH))
+      chosenActions.push(C.ACTIONS.NORTH)
+    if (goDown && actions.includes(C.ACTIONS.SOUTH))
+      chosenActions.push(C.ACTIONS.SOUTH)
 
     if (chosenActions.length < 1) {
       return randomChoice(actions)

@@ -1,17 +1,15 @@
 import React, { Component } from 'react'
 
 import C from './constants'
-import { 
+import {
   LEARNING_ALGOS,
   FOX_ALGOS,
   CHICKEN_ALGOS,
   getChickenActor,
-  getFoxActor
+  getFoxActor,
 } from './actors'
 
-
 export default class App extends Component {
-
   constructor(props) {
     super(props)
     this.board = props.board
@@ -34,7 +32,7 @@ export default class App extends Component {
         games: 0,
         actor: foxActor,
         algorithm: foxAlgorithm,
-      }
+      },
     }
   }
 
@@ -42,8 +40,11 @@ export default class App extends Component {
     setInterval(() => {
       this.setState({
         ...this.state,
-        chicken: {...this.state.chicken, games: this.state.chicken.actor.numGames},
-        fox: {...this.state.fox, games: this.state.fox.actor.numGames}
+        chicken: {
+          ...this.state.chicken,
+          games: this.state.chicken.actor.numGames,
+        },
+        fox: { ...this.state.fox, games: this.state.fox.actor.numGames },
       })
     }, 500)
   }
@@ -61,7 +62,9 @@ export default class App extends Component {
     if (algorithm === this.state.chicken.algorithm) return
     this.board.setValueActor(null)
     const actor = getChickenActor(algorithm)
-    this.setState({ chicken: { games: actor.numGames, actor: actor, algorithm: algorithm }})
+    this.setState({
+      chicken: { games: actor.numGames, actor: actor, algorithm: algorithm },
+    })
     e.target.blur()
   }
 
@@ -70,7 +73,9 @@ export default class App extends Component {
     if (algorithm === this.state.fox.algorithm) return
     this.board.setValueActor(null)
     const actor = getFoxActor(algorithm)
-    this.setState({ fox: { games: actor.numGames, actor: actor, algorithm: algorithm }})
+    this.setState({
+      fox: { games: actor.numGames, actor: actor, algorithm: algorithm },
+    })
     e.target.blur()
   }
 
@@ -90,67 +95,88 @@ export default class App extends Component {
 
   render() {
     return (
-        <div>
-          <ActorPanel
-            label="chicken"
-            onSelect={this.onSelectChicken}
-            algorithms={CHICKEN_ALGOS}
-            games={this.state.chicken.games}
-            onReset={this.state.chicken.actor.reset}
-            onValues={() => this.onValues(this.state.chicken.actor)}
-            isTraining={this.state.isTraining}
-            currentType={this.state.chicken.actor.type}
-          />
-          <ActorPanel
-            label="fox"
-            onSelect={this.onSelectFox}
-            algorithms={FOX_ALGOS}
-            games={this.state.fox.games}
-            onReset={this.state.fox.actor.reset}
-            onValues={() => this.onValues(this.state.fox.actor)}
-            isTraining={this.state.isTraining}
-            currentType={this.state.fox.actor.type}
-          />
-          <div className="buttonRow">
-            <div className="button" onClick={this.onNewGame} disabled={this.state.isTraining}>
-              new game
-            </div>
-            <div className="button" onClick={this.onTrain} disabled={this.state.isTraining}>
-              <div className="progress" style={{'right': `${100 - this.state.progress}%`}}></div>
-              train
-            </div>
+      <div>
+        <ActorPanel
+          label="chicken"
+          onSelect={this.onSelectChicken}
+          algorithms={CHICKEN_ALGOS}
+          games={this.state.chicken.games}
+          onReset={this.state.chicken.actor.reset}
+          onValues={() => this.onValues(this.state.chicken.actor)}
+          isTraining={this.state.isTraining}
+          currentType={this.state.chicken.actor.type}
+        />
+        <ActorPanel
+          label="fox"
+          onSelect={this.onSelectFox}
+          algorithms={FOX_ALGOS}
+          games={this.state.fox.games}
+          onReset={this.state.fox.actor.reset}
+          onValues={() => this.onValues(this.state.fox.actor)}
+          isTraining={this.state.isTraining}
+          currentType={this.state.fox.actor.type}
+        />
+        <div className="buttonRow">
+          <div
+            className="button"
+            onClick={this.onNewGame}
+            disabled={this.state.isTraining}
+          >
+            new game
+          </div>
+          <div
+            className="button"
+            onClick={this.onTrain}
+            disabled={this.state.isTraining}
+          >
+            <div
+              className="progress"
+              style={{ right: `${100 - this.state.progress}%` }}
+            />
+            train
           </div>
         </div>
+      </div>
     )
   }
 }
 
-const ActorPanel = ({label, isTraining, algorithms, onReset, onSelect, currentType, games, onValues}) => (
+const ActorPanel = ({
+  label,
+  isTraining,
+  algorithms,
+  onReset,
+  onSelect,
+  currentType,
+  games,
+  onValues,
+}) => (
   <div className="control">
     <label>{label}</label>
     <select onChange={onSelect} disabled={isTraining}>
-      {Object.values(algorithms).map(v =>
-        <option key={v} value={v}>{v}</option>
-      )}
+      {Object.values(algorithms).map(v => (
+        <option key={v} value={v}>
+          {v}
+        </option>
+      ))}
     </select>
     {isLearning(currentType) && (
-    <div className="button" onClick={onValues} disabled={isTraining}>
-      values
-    </div>
+      <div className="button" onClick={onValues} disabled={isTraining}>
+        values
+      </div>
     )}
     {isLearning(currentType) && (
-    <div className="button" onClick={onReset} disabled={isTraining}>
-      reset
-    </div>
+      <div className="button" onClick={onReset} disabled={isTraining}>
+        reset
+      </div>
     )}
-    {isLearning(currentType) && <span className="games">{displayGames(games)} games</span>}
-    
+    {isLearning(currentType) && (
+      <span className="games">{displayGames(games)} games</span>
+    )}
   </div>
 )
 
-
 const isLearning = type => LEARNING_ALGOS.includes(type)
 
-const displayGames = games => games > 1000
-  ? ((games - (games % 1000)) / 1000) + 'k'
-  : games
+const displayGames = games =>
+  games > 1000 ? (games - (games % 1000)) / 1000 + 'k' : games

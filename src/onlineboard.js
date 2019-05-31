@@ -7,8 +7,7 @@ let isTraining = false
 
 // sends training requests to the web worker thread
 export default class OnlineGameBoard extends GameBoard {
-
-  setValueActor = (actor) => {
+  setValueActor = actor => {
     // Display value function for this actor
     if (actor === this.valueActor) {
       this.valueActor = null
@@ -17,7 +16,7 @@ export default class OnlineGameBoard extends GameBoard {
     }
   }
 
-  getActorValues = () =>  {
+  getActorValues = () => {
     if (this.foxActor && this.valueActor === this.foxActor) {
       return this.foxActor.getValues(this.chickenPosition)
     } else if (this.chickenActor && this.valueActor === this.chickenActor) {

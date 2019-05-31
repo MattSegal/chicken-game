@@ -5,13 +5,12 @@ import { shuffle } from './utils'
 // Uses A* pathing algorithm to find shortest path to the target
 // Throw in a random move every 10 steps
 export default class AStarActor extends Actor {
-
   constructor(value) {
     super(value)
     // Setup a row + col lookup table that scores all moves on the gameboard
     this.squares = {}
-    for (let a = 0; a <  C.BOARD_LENGTH; a++) {
-      for (let b = 0; b <  C.BOARD_LENGTH; b++) {
+    for (let a = 0; a < C.BOARD_LENGTH; a++) {
+      for (let b = 0; b < C.BOARD_LENGTH; b++) {
         this.squares[keyFromPosition([a, b])] = {}
       }
     }
@@ -26,7 +25,10 @@ export default class AStarActor extends Actor {
     let current = keyFromPosition(position)
     const target = keyFromPosition(targetPosition)
     this.squares[current].steps = 0
-    this.squares[current].score = Actor.getManhattanDistance(position, targetPosition)
+    this.squares[current].score = Actor.getManhattanDistance(
+      position,
+      targetPosition
+    )
 
     // Find a square with the shortest distance to the target
     while (current !== target) {
@@ -42,10 +44,9 @@ export default class AStarActor extends Actor {
         const actionKey = keyFromPosition(actionPos)
         if (seen.has(actionKey)) continue
         this.squares[actionKey].steps = this.squares[current].steps + 1
-        this.squares[actionKey].score = (
+        this.squares[actionKey].score =
           this.squares[actionKey].steps +
           Actor.getManhattanDistance(actionPos, targetPosition)
-        )
         possible.add(actionKey)
       }
 
@@ -70,7 +71,11 @@ export default class AStarActor extends Actor {
       // Break loop if we have done too many iterations
       iterations++
       if (iterations > 5000) {
-        C.LOGGING && console.error('Too many iterations trying to reach square: ', targetPosition)
+        C.LOGGING &&
+          console.error(
+            'Too many iterations trying to reach square: ',
+            targetPosition
+          )
         resetGame()
         return
       }
@@ -81,7 +86,10 @@ export default class AStarActor extends Actor {
       let best = null
       let fewestSteps = Number.POSITIVE_INFINITY
       for (let key of seen) {
-        const distance = Actor.getManhattanDistance(positionfromKey(current), positionfromKey(key))
+        const distance = Actor.getManhattanDistance(
+          positionfromKey(current),
+          positionfromKey(key)
+        )
         if (distance === 1 && this.squares[key].steps < fewestSteps) {
           best = key
           fewestSteps = this.squares[key].steps
@@ -95,16 +103,11 @@ export default class AStarActor extends Actor {
   }
 }
 
+const keyFromPosition = pos => pos[0] * 100 + pos[1]
+const positionfromKey = key => [(key - (key % 100)) / 100, key % 100]
 
-const keyFromPosition = (pos) => pos[0] * 100 + pos[1]
-const positionfromKey = (key) => [(key - key % 100) / 100, key % 100]
+const sameRow = (sqA, sqB) => sqA.pos[0] === sqB.pos[0]
 
-const sameRow = (sqA, sqB) =>
-  sqA.pos[0] === sqB.pos[0]
+const sameCol = (sqA, sqB) => sqA.pos[1] === sqB.pos[1]
 
-const sameCol = (sqA, sqB) =>
-  sqA.pos[1] === sqB.pos[1]
-
-const samePosition = (sqA, sqB) =>
-  sameRow(sqA, sqB) && sameCol(sqA, sqB)
-
+const samePosition = (sqA, sqB) => sameRow(sqA, sqB) && sameCol(sqA, sqB)

@@ -1,6 +1,5 @@
 import C from '../constants'
 
-
 // Represents the chicken/fox on the game board
 export default class Actor {
   constructor(value) {

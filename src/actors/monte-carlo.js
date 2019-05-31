@@ -3,16 +3,14 @@ import Actor from './base'
 import StateSpace from './state-space'
 import { randomChoice } from './utils'
 
-
 export default class MonteCarloActor extends Actor {
-
   constructor(value) {
     super(value)
     this.isFleeing = true
     this.episodeReward = 0
     this.states = new StateSpace(() => ({
       value: 0,
-      visits: 0
+      visits: 0,
     }))
     this.seen = []
   }
@@ -37,7 +35,7 @@ export default class MonteCarloActor extends Actor {
     this.episodeReward = 0
     this.states = new StateSpace(() => ({
       value: 0,
-      visits: 0
+      visits: 0,
     }))
   }
 
@@ -56,20 +54,31 @@ export default class MonteCarloActor extends Actor {
     const ranking = []
     // Get a grid of values for a given target position
     // normalized from 0 to 1
-    for (let a = 0; a < C.BOARD_LENGTH; a++) { // actor row
-    for (let b = 0; b < C.BOARD_LENGTH; b++) { // actor col
-      if (!arr[a]) arr[a] = []
-      const key = this.states.getKey(a, b, targetPosition[0], targetPosition[1]) 
-      const val = this.states.getState(key).value
-      arr[a].push(val)
-      ranking.push(val)
-    }}
+    for (let a = 0; a < C.BOARD_LENGTH; a++) {
+      // actor row
+      for (let b = 0; b < C.BOARD_LENGTH; b++) {
+        // actor col
+        if (!arr[a]) arr[a] = []
+        const key = this.states.getKey(
+          a,
+          b,
+          targetPosition[0],
+          targetPosition[1]
+        )
+        const val = this.states.getState(key).value
+        arr[a].push(val)
+        ranking.push(val)
+      }
+    }
     // Normalize results to range [0,1]
-    ranking.sort((a,b) => a > b)
-    for (let a = 0; a < C.BOARD_LENGTH; a++) { // actor row
-    for (let b = 0; b < C.BOARD_LENGTH; b++) { // actor col
-      arr[a][b] = ranking.indexOf(arr[a][b]) / (ranking.length - 1)
-    }}
+    ranking.sort((a, b) => a > b)
+    for (let a = 0; a < C.BOARD_LENGTH; a++) {
+      // actor row
+      for (let b = 0; b < C.BOARD_LENGTH; b++) {
+        // actor col
+        arr[a][b] = ranking.indexOf(arr[a][b]) / (ranking.length - 1)
+      }
+    }
     return arr
   }
 
@@ -117,11 +126,15 @@ export default class MonteCarloActor extends Actor {
     if (Math.random() < epsilon) {
       chosenAction = this.chooseActionRandomly(actions)
     } else {
-      chosenAction = this.chooseActionGreedily(actions, position, targetPosition)
+      chosenAction = this.chooseActionGreedily(
+        actions,
+        position,
+        targetPosition
+      )
     }
     return chosenAction
   }
-  
+
   chooseActionRandomly(actions) {
     return randomChoice(actions)
   }
@@ -142,7 +155,10 @@ export default class MonteCarloActor extends Actor {
       }
 
       // If this new action is more valuable than our best option, choose that
-      const actionValue = this.states.getStateFromPositions(actionPosition, targetPosition).value
+      const actionValue = this.states.getStateFromPositions(
+        actionPosition,
+        targetPosition
+      ).value
       if (actionValue > bestValue) {
         bestValue = actionValue
         bestAction = action
@@ -152,5 +168,3 @@ export default class MonteCarloActor extends Actor {
     return bestAction
   }
 }
-
-

@@ -4,7 +4,6 @@ import GameBoard from './gameboard'
 
 let isTraining = false
 
-
 onmessage = e => {
   if (isTraining) return
   isTraining = true
@@ -22,10 +21,10 @@ onmessage = e => {
 
   for (let i = 0; i < C.TRAINING_STEPS; i++) {
     board.run(board.reset)
-    if (i % 1000 === 0 ) {
+    if (i % 1000 === 0) {
       postMessage({
         done: false,
-        progress: Math.floor(100 * i / C.TRAINING_STEPS)
+        progress: Math.floor((100 * i) / C.TRAINING_STEPS),
       })
     }
   }
@@ -33,7 +32,7 @@ onmessage = e => {
   postMessage({
     done: true,
     chickenData: chickenActor.serialize(),
-    foxData: foxActor.serialize()
+    foxData: foxActor.serialize(),
   })
   isTraining = false
 }

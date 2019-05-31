@@ -7,16 +7,22 @@
 // Store these values in nested hash tables, indexed by [a][b][c][d]
 import C from '../constants'
 
-
 export default class StateSpace {
   constructor(initState) {
     this._states = {}
-    for (let a = 0; a < C.BOARD_LENGTH; a++) { // chicken row
-    for (let b = 0; b < C.BOARD_LENGTH; b++) { // chicken col
-    for (let c = 0; c < C.BOARD_LENGTH; c++) { // fox row
-    for (let d = 0; d < C.BOARD_LENGTH; d++) { // fox col
-      this._states[this.getKey(a, b, c, d)] = initState()
-    }}}}
+    for (let a = 0; a < C.BOARD_LENGTH; a++) {
+      // chicken row
+      for (let b = 0; b < C.BOARD_LENGTH; b++) {
+        // chicken col
+        for (let c = 0; c < C.BOARD_LENGTH; c++) {
+          // fox row
+          for (let d = 0; d < C.BOARD_LENGTH; d++) {
+            // fox col
+            this._states[this.getKey(a, b, c, d)] = initState()
+          }
+        }
+      }
+    }
   }
 
   getState(key) {

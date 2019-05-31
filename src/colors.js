@@ -8,7 +8,6 @@ RGB: 0 ≤ R, G, B ≤ 255
 */
 
 export default class ColorWheel {
-
   constructor(hue, sat, val) {
     this.hue = hue
     this.sat = sat
@@ -18,11 +17,11 @@ export default class ColorWheel {
   // Rotate hue in radians
   rotate(angle) {
     const newHue = (2 * Math.PI + this.hue + angle) % (2 * Math.PI)
-  	return new ColorWheel(newHue, this.sat, this.val)
+    return new ColorWheel(newHue, this.sat, this.val)
   }
 
   // Converts HSV to CSS compatible string
-  asCSS() { 
+  asCSS() {
     const [red, green, blue] = this.asRGB()
     return `rgb(${red}, ${green}, ${blue})`
   }
@@ -32,23 +31,23 @@ export default class ColorWheel {
     // #1 - calculate inscrutable intermediate values
     const h = this.hue / (Math.PI / 3)
     const c = this.val * this.sat
-    const x = c * (1 - Math.abs(h % 2 - 1))
+    const x = c * (1 - Math.abs((h % 2) - 1))
     const o = this.val - c
 
     // #2 - smash them together
     const idx = Math.floor(h)
-    return this.huePrimeLookup(x,c)[idx]
-      .map(color => color + o)
+    return this.huePrimeLookup(x, c)
+      [idx].map(color => color + o)
       .map(color => Math.round(255 * color))
   }
 
-  huePrimeLookup = (x,c) => [
-    [c, x, 0], 
-    [x, c, 0], 
-    [0, c, x], 
-    [0, x, c], 
-    [x, 0, c], 
-    [c, 0, x], 
-    [0, 0, 0], 
+  huePrimeLookup = (x, c) => [
+    [c, x, 0],
+    [x, c, 0],
+    [0, c, x],
+    [0, x, c],
+    [x, 0, c],
+    [c, 0, x],
+    [0, 0, 0],
   ]
 }
