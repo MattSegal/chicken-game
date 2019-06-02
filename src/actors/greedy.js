@@ -1,31 +1,34 @@
-import C from '../constants'
-import Actor from './base'
-import { randomChoice } from './utils'
+// @flow
+import { ACTIONS, SPRITES } from '../constants'
+import { Actor } from './base'
+import { randomChoice } from 'utils'
+import type {
+  Sprite,
+  Action,
+  Vector,
+  ActorType as ActorTypeType, // I regret nothing
+} from 'types'
 
-const OPPOSITE = {
-  [C.ACTIONS.NORTH]: C.ACTIONS.SOUTH,
-  [C.ACTIONS.SOUTH]: C.ACTIONS.NORTH,
-  [C.ACTIONS.EAST]: C.ACTIONS.WEST,
-  [C.ACTIONS.WEST]: C.ACTIONS.EAST,
+const OPPOSITE: { [Action]: Action } = {
+  N: ACTIONS.SOUTH,
+  S: ACTIONS.NORTH,
+  E: ACTIONS.WEST,
+  W: ACTIONS.EAST,
 }
 
 export default class GreedyActor extends Actor {
-  constructor(name, value, board) {
-    super(name, value, board)
-    this.isFollowing = true
+  isFollowing: boolean
+  constructor(sprite: Sprite, type: ActorTypeType) {
+    super(sprite, type)
+    this.isFollowing = sprite === SPRITES.FOX
   }
 
-  flee() {
-    this.isFollowing = false
-    return this
-  }
-
-  follow() {
-    this.isFollowing = true
-    return this
-  }
-
-  timestep(getActions, resetGame, position, targetPosition) {
+  timestep(
+    getActions: (number, number) => Array<Action>,
+    resetGame: () => void,
+    position: Vector,
+    targetPosition: Vector
+  ): Action {
     const row = position[0]
     const col = position[1]
     const targetRow = targetPosition[0]
@@ -40,14 +43,14 @@ export default class GreedyActor extends Actor {
 
     const chosenActions = []
 
-    if (goLeft && actions.includes(C.ACTIONS.WEST))
-      chosenActions.push(C.ACTIONS.WEST)
-    if (goRight && actions.includes(C.ACTIONS.EAST))
-      chosenActions.push(C.ACTIONS.EAST)
-    if (goUp && actions.includes(C.ACTIONS.NORTH))
-      chosenActions.push(C.ACTIONS.NORTH)
-    if (goDown && actions.includes(C.ACTIONS.SOUTH))
-      chosenActions.push(C.ACTIONS.SOUTH)
+    if (goLeft && actions.includes(ACTIONS.WEST))
+      chosenActions.push(ACTIONS.WEST)
+    if (goRight && actions.includes(ACTIONS.EAST))
+      chosenActions.push(ACTIONS.EAST)
+    if (goUp && actions.includes(ACTIONS.NORTH))
+      chosenActions.push(ACTIONS.NORTH)
+    if (goDown && actions.includes(ACTIONS.SOUTH))
+      chosenActions.push(ACTIONS.SOUTH)
 
     if (chosenActions.length < 1) {
       return randomChoice(actions)

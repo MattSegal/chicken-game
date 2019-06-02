@@ -8,8 +8,8 @@ module.exports = {
   devtool: 'cheap-module-eval-source-map',
   devServer: {
     disableHostCheck: true,
-    publicPath: 'http://localhost:3000/build/',
-    contentBase: [path.join(__dirname, 'dist'), path.join(__dirname, 'public')],
+    publicPath: 'http://localhost:3000/static/',
+    contentBase: __dirname,
     historyApiFallback: true,
     compress: true,
     port: 3000,

@@ -1,120 +1,91 @@
+// @flow
 import React, { Component } from 'react'
 
-import C from './constants'
-import {
-  LEARNING_ALGOS,
-  FOX_ALGOS,
-  CHICKEN_ALGOS,
-  getChickenActor,
-  getFoxActor,
-} from './actors'
+import { buildActor, CHICKEN_ALGOS, FOX_ALGOS, LEARNING_ALGOS } from './actors'
+import type { OnlineGameBoard, Actor, ActorType } from 'types'
 
-export default class App extends Component {
-  constructor(props) {
+const CHICKEN_IDX = 0
+const FOX_IDX = 1
+const UPDATE_TICK = 500 // ms
+
+type Props = {
+  board: OnlineGameBoard,
+}
+
+type State = {
+  isTraining: boolean,
+  progress: number,
+  games: [number, number],
+}
+
+export default class App extends Component<Props, State> {
+  board: OnlineGameBoard
+  constructor(props: Props) {
     super(props)
     this.board = props.board
-    const foxAlgorithm = Object.values(FOX_ALGOS)[0]
-    const chickenAlgorithm = Object.values(CHICKEN_ALGOS)[0]
-    const foxActor = getFoxActor(foxAlgorithm)
-    const chickenActor = getChickenActor(chickenAlgorithm)
-    this.board.addChicken(chickenActor)
-    this.board.addFox(foxActor)
-    this.board.runInterval()
+    this.board.run(() => {})
     this.state = {
       isTraining: false,
       progress: 0,
-      chicken: {
-        games: 0,
-        actor: chickenActor,
-        algorithm: chickenAlgorithm,
-      },
-      fox: {
-        games: 0,
-        actor: foxActor,
-        algorithm: foxAlgorithm,
-      },
+      games: [0, 0],
     }
   }
-
   componentDidMount() {
     setInterval(() => {
       this.setState({
         ...this.state,
-        chicken: {
-          ...this.state.chicken,
-          games: this.state.chicken.actor.numGames,
-        },
-        fox: { ...this.state.fox, games: this.state.fox.actor.numGames },
+        games: [
+          this.board.actors[CHICKEN_IDX].games,
+          this.board.actors[FOX_IDX].games,
+        ],
       })
-    }, 500)
+    }, UPDATE_TICK)
   }
-
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    if (this.state.chicken.algorithm !== prevState.chicken.algorithm) {
-      this.board.addChicken(this.state.chicken.actor)
-    } else if (this.state.fox.algorithm !== prevState.fox.algorithm) {
-      this.board.addFox(this.state.fox.actor)
-    }
-  }
-
-  onSelectChicken = e => {
-    const algorithm = e.target.value
-    if (algorithm === this.state.chicken.algorithm) return
-    this.board.setValueActor(null)
-    const actor = getChickenActor(algorithm)
-    this.setState({
-      chicken: { games: actor.numGames, actor: actor, algorithm: algorithm },
-    })
+  onSelect = (idx: 0 | 1) => (e: SyntheticInputEvent<any>) => {
+    const currentActor = this.board.actors[idx]
+    // @noflow
+    const actorType: ActorType = e.target.value
+    if (actorType === currentActor.type) return
+    this.board.actors[idx] = buildActor(actorType)
+    const games = [...this.state.games]
+    games[idx] = 0
     e.target.blur()
   }
-
-  onSelectFox = e => {
-    const algorithm = e.target.value
-    if (algorithm === this.state.fox.algorithm) return
-    this.board.setValueActor(null)
-    const actor = getFoxActor(algorithm)
-    this.setState({
-      fox: { games: actor.numGames, actor: actor, algorithm: algorithm },
-    })
-    e.target.blur()
-  }
-
-  onNewGame = e => this.board.reset()
-
-  onTrain = e => {
+  onNewGame = () => this.board.reset()
+  onTrain = () => {
     this.setState({ isTraining: true })
     this.board.train(this.onTrainingProgress, this.onDoneTraining)
   }
-
-  onTrainingProgress = progress => this.setState({ progress: progress })
+  onTrainingProgress = (progress: number) => this.setState({ progress })
   onDoneTraining = () => this.setState({ isTraining: false, progress: 0 })
-  onValues = actor => {
+  onValues = (actor: Actor) => {
     // Display value function for that actor
-    this.board.setValueActor(actor)
+    // this.board.setValueActor(actor)
   }
-
   render() {
+    const chickenActor = this.board.actors[CHICKEN_IDX]
+    const foxActor = this.board.actors[FOX_IDX]
     return (
       <div>
         <ActorPanel
           label="chicken"
-          onSelect={this.onSelectChicken}
           algorithms={CHICKEN_ALGOS}
-          games={this.state.chicken.games}
-          onReset={this.state.chicken.actor.reset}
-          onValues={() => this.onValues(this.state.chicken.actor)}
+          games={this.state.games[CHICKEN_IDX]}
           isTraining={this.state.isTraining}
-          currentType={this.state.chicken.actor.type}
+          currentType={chickenActor.type}
+          onReset={chickenActor.reset}
+          onValues={() => this.onValues(chickenActor)}
+          onSelect={this.onSelect(CHICKEN_IDX)}
         />
         <ActorPanel
           label="fox"
-          onSelect={this.onSelectFox}
           algorithms={FOX_ALGOS}
-          games={this.state.fox.games}
-          onReset={this.state.fox.actor.reset}
-          onValues={() => this.onValues(this.state.fox.actor)}
+          games={this.state.games[FOX_IDX]}
           isTraining={this.state.isTraining}
-          currentType={this.state.fox.actor.type}
+          currentType={foxActor.type}
+          onReset={foxActor.reset}
+          onValues={() => this.onValues(foxActor)}
+          onSelect={this.onSelect(FOX_IDX)}
         />
         <div className="buttonRow">
           <div
@@ -141,22 +112,33 @@ export default class App extends Component {
   }
 }
 
+type PanelProps = {
+  label: string,
+  isTraining: boolean,
+  algorithms: { [ActorType]: string },
+  currentType: ActorType,
+  games: number,
+  onValues: Function,
+  onReset: Function,
+  onSelect: Function,
+}
+
 const ActorPanel = ({
   label,
   isTraining,
   algorithms,
-  onReset,
-  onSelect,
   currentType,
   games,
+  onReset,
+  onSelect,
   onValues,
-}) => (
+}: PanelProps) => (
   <div className="control">
     <label>{label}</label>
     <select onChange={onSelect} disabled={isTraining}>
-      {Object.values(algorithms).map(v => (
-        <option key={v} value={v}>
-          {v}
+      {Object.entries(algorithms).map(([k, v]) => (
+        <option key={k} value={k}>
+          {String(v)}
         </option>
       ))}
     </select>
@@ -176,7 +158,7 @@ const ActorPanel = ({
   </div>
 )
 
-const isLearning = type => LEARNING_ALGOS.includes(type)
+const isLearning = (type: ActorType) => LEARNING_ALGOS.includes(type)
 
 const displayGames = games =>
   games > 1000 ? (games - (games % 1000)) / 1000 + 'k' : games

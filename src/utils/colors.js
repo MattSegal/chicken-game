@@ -1,3 +1,4 @@
+// @flow
 /*
 The ColorWheel allows us to work with colors using
 Hue/Saturation/Value (HSV)  and then convert it to 
@@ -7,15 +8,18 @@ HSV: 0 ≤ H < 2PI, 0 ≤ S ≤ 1 and 0 ≤ V ≤ 1:
 RGB: 0 ≤ R, G, B ≤ 255
 */
 
-export default class ColorWheel {
-  constructor(hue, sat, val) {
+export class ColorWheel {
+  hue: number
+  sat: number
+  val: number
+  constructor(hue: number, sat: number, val: number) {
     this.hue = hue
     this.sat = sat
     this.val = val
   }
 
   // Rotate hue in radians
-  rotate(angle) {
+  rotate(angle: number) {
     const newHue = (2 * Math.PI + this.hue + angle) % (2 * Math.PI)
     return new ColorWheel(newHue, this.sat, this.val)
   }
@@ -27,7 +31,7 @@ export default class ColorWheel {
   }
 
   // Converts HSV to RGB
-  asRGB() {
+  asRGB(): Array<number> {
     // #1 - calculate inscrutable intermediate values
     const h = this.hue / (Math.PI / 3)
     const c = this.val * this.sat
@@ -36,12 +40,13 @@ export default class ColorWheel {
 
     // #2 - smash them together
     const idx = Math.floor(h)
-    return this.huePrimeLookup(x, c)
-      [idx].map(color => color + o)
+    const lookup = this.getHuePrimeLookup(x, c)
+    return lookup[idx]
+      .map(color => color + o)
       .map(color => Math.round(255 * color))
   }
 
-  huePrimeLookup = (x, c) => [
+  getHuePrimeLookup = (x: number, c: number) => [
     [c, x, 0],
     [x, c, 0],
     [0, c, x],

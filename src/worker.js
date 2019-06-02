@@ -1,38 +1,35 @@
-import C from './constants'
-import { buildChickenActor, buildFoxActor } from './actors'
-import GameBoard from './gameboard'
+// @flow
+import { TIME } from './constants'
+import { buildActor } from './actors'
+import { GameBoard } from './board'
+import type { WorkerMessage, OnlineMessage } from 'types'
 
 let isTraining = false
 
-onmessage = e => {
+declare function postMessage(OnlineMessage): void
+
+onmessage = (e: { data: WorkerMessage }) => {
   if (isTraining) return
   isTraining = true
-  const { chickenData, foxData, grid } = e.data
-
-  const chickenActor = buildChickenActor(chickenData.type)
-  chickenActor.deserialize(chickenData)
-
-  const foxActor = buildFoxActor(foxData.type)
-  foxActor.deserialize(foxData)
-
+  const { actorMessages, grid } = e.data
+  const actors = [
+    buildActor(actorMessages[0].type),
+    buildActor(actorMessages[1].type),
+  ]
   const board = new GameBoard(grid)
-  board.addFox(foxActor)
-  board.addChicken(chickenActor)
-
-  for (let i = 0; i < C.TRAINING_STEPS; i++) {
+  for (let i = 0; i < TIME.TRAINING_STEPS; i++) {
     board.run(board.reset)
     if (i % 1000 === 0) {
       postMessage({
         done: false,
-        progress: Math.floor((100 * i) / C.TRAINING_STEPS),
+        progress: Math.floor((100 * i) / TIME.TRAINING_STEPS),
       })
     }
   }
-
   postMessage({
     done: true,
-    chickenData: chickenActor.serialize(),
-    foxData: foxActor.serialize(),
+    progress: 100,
+    actorMessages: [actors[0].serialize(), actors[1].serialize()],
   })
   isTraining = false
 }

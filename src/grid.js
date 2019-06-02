@@ -1,19 +1,18 @@
-import C from './constants'
+// @flow
+import { BOARD, SPRITES } from './constants'
+import type { Grid, Sprite } from 'types'
 
-export default class Grid {
-  constructor() {
-    this._grid = Array(C.BOARD_LENGTH)
-      .fill(0)
-      .map(fillRow)
-  }
+export const create = (): Grid =>
+  Array(BOARD.BOARD_LENGTH)
+    .fill(0)
+    .map(fillRow)
 
-  getCopy() {
-    return this._grid.map(row => row.map(col => col))
-  }
-}
+export const copy = (grid: Grid): Grid => grid.map(r => r.map(c => c))
 
-const fillCol = () => (Math.random() > C.TREE_DENSITY ? C.EMPTY : C.TREE)
+const fillCol = (): Sprite =>
+  Math.random() > BOARD.TREE_DENSITY ? SPRITES.EMPTY : SPRITES.TREE
+
 const fillRow = () =>
-  Array(C.BOARD_LENGTH)
+  Array(BOARD.BOARD_LENGTH)
     .fill(0)
     .map(fillCol)

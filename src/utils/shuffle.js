@@ -1,5 +1,6 @@
+// @flow
 // Thanks StackOverflow!
-const shuffle = a => {
+export function shuffle<T>(a: Array<T>): Array<T> {
   var j, x, i
   for (i = a.length - 1; i > 0; i--) {
     j = Math.floor(Math.random() * (i + 1))
@@ -9,7 +10,3 @@ const shuffle = a => {
   }
   return a
 }
-
-const randomChoice = a => a[Math.floor(Math.random() * a.length)]
-
-module.exports = { shuffle, randomChoice }

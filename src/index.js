@@ -1,18 +1,23 @@
+// // @flow
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-import View from './view'
-import Grid from './grid'
-import OnlineGameBoard from './onlineboard'
-import App from './app'
+import * as Grid from './grid'
+import * as View from './view'
+// import { OnlineGameBoard } from './board'
+import { buildActor, CHICKEN_ALGOS, FOX_ALGOS } from './actors'
+// import App from './app'
 
-// Initialize board
-const baseGrid = new Grid()
-const displayGrid = baseGrid.getCopy()
-const board = new OnlineGameBoard(displayGrid)
+// // Initialize board
+// const baseGrid = Grid.create()
+// const displayGrid = Grid.copy(baseGrid)
+// const chicken = buildActor('CHICKEN_TEMPORAL_DIFFERENCE')
+// const fox = buildActor('FOX_GREEDY')
+// const board = new OnlineGameBoard(displayGrid, [chicken, fox])
 
-// Draw grid
-View.drawWhenReady(board)
+// // Draw grid
+// View.drawWhenReady(board)
 
-// Draw controls
-ReactDOM.render(<App board={board} />, document.getElementById('controls'))
+// // Draw controls
+// // @noflow
+// ReactDOM.render(<App board={board} />, document.getElementById('controls'))
