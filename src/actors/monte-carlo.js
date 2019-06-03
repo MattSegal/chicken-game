@@ -1,14 +1,14 @@
 import { ACTIONS, BOARD, SPRITES } from '../constants'
 import { Actor } from './base'
 import { StateSpace } from './state-space'
-import { randomChoice } from 'utils'
+import { randomChoice } from './utils'
 import type {
   Sprite,
   Action,
   Vector,
   ActorMessage,
   ActorType as ActorTypeType, // I regret nothing
-} from 'types'
+} from './types'
 
 type State = {
   value: number,

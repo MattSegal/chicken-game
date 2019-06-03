@@ -1,5 +1,5 @@
 // @flow
-import type { Action, Vector, Sprite } from 'types'
+import type { Action, Vector, Sprite } from './types'
 
 export const BOARD = {
   // Game constants
@@ -21,11 +21,11 @@ export const ACTIONS: { [string]: Action } = {
   WEST: 'W',
 }
 
-export const VECTORS: { [string]: Vector } = {
-  NORTH: [-1, 0],
-  SOUTH: [1, 0],
-  EAST: [0, 1],
-  WEST: [0, -1],
+export const VECTORS: { [Action]: Vector } = {
+  N: [-1, 0],
+  S: [1, 0],
+  E: [0, 1],
+  W: [0, -1],
 }
 
 export const SPRITES: { [string]: Sprite } = {

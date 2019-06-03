@@ -1,13 +1,13 @@
 // @flow
 import { ACTIONS, SPRITES } from '../constants'
 import { Actor } from './base'
-import { randomChoice } from 'utils'
+import { randomChoice } from '../utils'
 import type {
   Sprite,
   Action,
   Vector,
   ActorType as ActorTypeType, // I regret nothing
-} from 'types'
+} from '../types'
 
 const OPPOSITE: { [Action]: Action } = {
   N: ACTIONS.SOUTH,

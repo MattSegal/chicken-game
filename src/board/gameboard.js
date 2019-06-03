@@ -1,12 +1,12 @@
 // @flow
-import { SPRITES, BOARD, ACTIONS, VECTORS, TIME } from 'constants'
+import { SPRITES, BOARD, ACTIONS, VECTORS, TIME } from '../constants'
 import type {
   Actor,
   Vector,
   Grid,
   Action,
   GameBoard as GameBoardType,
-} from 'types'
+} from '../types'
 
 // Game model
 export class GameBoard implements GameBoardType {
@@ -33,16 +33,20 @@ export class GameBoard implements GameBoardType {
     return hero.getValues(villain.position)
   }
 
-  reset = () => {
+  reset = () => this._reset()
+
+  run = () => this._run(this._reset)
+
+  train = (onProgress: Function, onDone: Function) => {}
+
+  _reset = () => {
     for (let actor of this.actors) {
-      actor.endGame()
+      actor.end()
       this._clearPosition(actor.position)
       actor.position = this._getRandomPosition()
       this._setPosition(actor)
     }
   }
-
-  run = onReset => this._run(onReset)
 
   _run = (onReset: () => void) => {
     this.gameIterations++

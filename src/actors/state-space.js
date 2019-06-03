@@ -7,7 +7,7 @@
 // initialize each state as an object
 // Store these values in nested hash tables, indexed by [a][b][c][d]
 import { BOARD } from '../constants'
-import type { Vector } from 'types'
+import type { Vector } from '../types'
 
 export class StateSpace<T> {
   _states: { [number]: T }

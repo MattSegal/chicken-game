@@ -1,19 +1,19 @@
 // @flow
-import { TIME } from 'constants'
+import { TIME } from '../constants'
 import { GameBoard } from './gameboard'
 import Worker from '../worker'
 import type {
-  OnlineGameBoard as OnlineGameBoardType,
+  GameBoard as GameBoardType,
   WorkerMessage,
   OnlineMessage,
-} from 'types'
+} from '../types'
 
 // @noflow
 const worker = new Worker()
 let isTraining = false
 
 // sends training requests to the web worker thread
-export class OnlineGameBoard extends GameBoard implements OnlineGameBoardType {
+export class OnlineGameBoard extends GameBoard implements GameBoardType {
   timerId: IntervalID
 
   train = (onProgress: number => void, onDone: () => void) => {
@@ -38,17 +38,21 @@ export class OnlineGameBoard extends GameBoard implements OnlineGameBoardType {
     worker.postMessage(message)
   }
 
+  run = () => this._runInterval()
+
+  reset = () => this._resetInterval()
+
   _runInterval = () => {
     this.timerId = setInterval(() => {
       // Set new positions for actors
-      this.run(this._resetInterval)
+      this._run(this._resetInterval)
     }, TIME.TICK)
   }
 
   _resetInterval = () => {
     clearInterval(this.timerId)
     setTimeout(() => {
-      this.reset()
+      this._reset()
       this._runInterval()
     }, 3 * TIME.TICK)
   }

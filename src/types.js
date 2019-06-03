@@ -48,7 +48,7 @@ export interface Actor {
   serialize(): ActorMessage;
   deserialize(ActorMessage): void;
   reset(): void;
-  endGame(): void;
+  end(): void;
   getValues(Vector): Array<Array<number>> | null;
 }
 
@@ -56,11 +56,7 @@ export interface GameBoard {
   grid: Grid;
   actors: [Actor, Actor];
   getValues(): Array<Array<number>> | null;
-  run: (onReset: () => void) => void;
+  run: () => void;
   reset(): void;
-}
-
-export interface OnlineGameBoard extends GameBoard {
-  train(Function, Function): void;
-  run: (onReset: () => void) => void;
+  train(onProgress: Function, onDone: Function): void;
 }

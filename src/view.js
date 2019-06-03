@@ -1,7 +1,7 @@
 // @flow
 import { BOARD, SPRITES } from './constants'
-import { ColorWheel, buildImage, loadImage } from 'utils'
-import { GameBoard } from 'types'
+import { ColorWheel, buildImage, loadImage } from './utils'
+import { GameBoard } from './types'
 
 // Sprite
 const SRC_LENGTH = 256 // px

@@ -1,7 +1,7 @@
 // @flow
-import { BOARD, LOGGING } from 'constants'
+import { BOARD, LOGGING } from '../constants'
+import { shuffle } from '../utils'
 import { Actor } from './base'
-import { shuffle } from 'utils'
 import type {
   Sprite,
   Action,
@@ -9,7 +9,7 @@ import type {
   ActorMessage,
   Actor as ActorType,
   ActorType as ActorTypeType, // I regret nothing
-} from 'types'
+} from '../types'
 
 type Square = {
   steps: number,

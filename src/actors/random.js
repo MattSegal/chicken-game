@@ -1,7 +1,7 @@
 // @flow
 import { Actor } from './base'
-import { randomChoice } from 'utils'
-import type { Vector, Action } from 'types'
+import { randomChoice } from '../utils'
+import type { Vector, Action } from '../types'
 
 // Totally random actor
 export default class RandomActor extends Actor {

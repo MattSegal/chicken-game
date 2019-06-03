@@ -1,6 +1,6 @@
 // @flow
 import { BOARD, SPRITES } from './constants'
-import type { Grid, Sprite } from 'types'
+import type { Grid, Sprite } from './types'
 
 export const create = (): Grid =>
   Array(BOARD.BOARD_LENGTH)

@@ -2,14 +2,14 @@
 import React, { Component } from 'react'
 
 import { buildActor, CHICKEN_ALGOS, FOX_ALGOS, LEARNING_ALGOS } from './actors'
-import type { OnlineGameBoard, Actor, ActorType } from 'types'
+import type { GameBoard, Actor, ActorType } from './types'
 
 const CHICKEN_IDX = 0
 const FOX_IDX = 1
 const UPDATE_TICK = 500 // ms
 
 type Props = {
-  board: OnlineGameBoard,
+  board: GameBoard,
 }
 
 type State = {
@@ -19,11 +19,11 @@ type State = {
 }
 
 export default class App extends Component<Props, State> {
-  board: OnlineGameBoard
+  board: GameBoard
   constructor(props: Props) {
     super(props)
     this.board = props.board
-    this.board.run(() => {})
+    this.board.run()
     this.state = {
       isTraining: false,
       progress: 0,

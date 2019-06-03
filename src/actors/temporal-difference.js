@@ -2,7 +2,7 @@
 import { BOARD, SPRITES } from '../constants'
 import { Actor } from './base'
 import { StateSpace } from './state-space'
-import { randomChoice } from 'utils'
+import { randomChoice } from '../utils'
 import type {
   Sprite,
   Action,
@@ -10,7 +10,7 @@ import type {
   ActorMessage,
   Actor as ActorType,
   ActorType as ActorTypeType, // I regret nothing
-} from 'types'
+} from '../types'
 
 const ALPHA = 0.9
 const GAMMA = 0.9

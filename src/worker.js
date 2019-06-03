@@ -1,14 +1,10 @@
-// @flow
 import { TIME } from './constants'
 import { buildActor } from './actors'
-import { GameBoard } from './board'
-import type { WorkerMessage, OnlineMessage } from 'types'
+import { GameBoard } from './board/gameboard'
 
 let isTraining = false
 
-declare function postMessage(OnlineMessage): void
-
-onmessage = (e: { data: WorkerMessage }) => {
+onmessage = e => {
   if (isTraining) return
   isTraining = true
   const { actorMessages, grid } = e.data

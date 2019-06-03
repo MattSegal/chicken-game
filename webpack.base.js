@@ -27,7 +27,7 @@ module.exports = {
     new webpack.NoEmitOnErrorsPlugin(),
   ],
   resolve: {
-    extensions: ['.js', '*'],
+    extensions: ['*', '.js'],
     modules: [
       path.resolve(__dirname, 'src'),
       path.resolve(__dirname, 'node_modules'),

@@ -1,5 +1,5 @@
 // @flow
-import { VECTORS, ACTIONS } from 'constants'
+import { VECTORS, ACTIONS } from '../constants'
 import type {
   Sprite,
   Action,
@@ -7,7 +7,7 @@ import type {
   ActorMessage,
   Actor as ActorType,
   ActorType as ActorTypeType, // I regret nothing
-} from 'types'
+} from '../types'
 
 // Represents the chicken/fox on the game board
 export class Actor implements ActorType {
@@ -48,7 +48,7 @@ export class Actor implements ActorType {
     this.games = 0
   }
 
-  endGame() {
+  end() {
     // Do whatever you need to at the end of a game
     this.games++
   }

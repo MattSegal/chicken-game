@@ -9,9 +9,6 @@ src/globals.js
 [lints]
 
 [options]
-module.name_mapper='^types' ->'<PROJECT_ROOT>/src/types'
-module.name_mapper='^constants' ->'<PROJECT_ROOT>/src/constants'
-module.name_mapper='^utils' ->'<PROJECT_ROOT>/src/utils'
 
 suppress_comment= \\(.\\|\n\\)*\\@noflow
 

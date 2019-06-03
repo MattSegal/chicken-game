@@ -7,7 +7,7 @@ import type {
   ActorMessage,
   Actor as ActorType,
   ActorType as ActorTypeType, // I regret nothing
-} from 'types'
+} from '../types'
 
 const MOVES = {
   ArrowDown: 'SOUTH',

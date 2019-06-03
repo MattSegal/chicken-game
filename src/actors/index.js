@@ -6,7 +6,7 @@ import RandomActor from './random'
 import AStarActor from './a-star'
 import TemporalDifferenceActor from './temporal-difference'
 // import MonteCarloActor from './monte-carlo'
-import type { ActorType, Actor } from 'types'
+import type { ActorType, Actor } from '../types'
 
 export const CHICKEN_ALGOS: { [ActorType]: string } = {
   CHICKEN_TEMPORAL_DIFFERENCE: 'temporal difference',
