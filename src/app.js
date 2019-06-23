@@ -85,9 +85,6 @@ export class App extends Component<Props, State> {
   // Callback for when training is finished.
   onDoneTraining = () => this.setState({ isTraining: false, progress: 0 })
   // Visualize actor value function
-  showValues = () => {
-    // ???
-  }
   render() {
     const { isTraining, games, progress } = this.state
     return (
@@ -102,6 +99,7 @@ export class App extends Component<Props, State> {
             currentType={actor.type}
             onReset={() => this.board.resetActor(idx)}
             hasValues={this.board.actors[idx].hasValues}
+            onValues={() => this.board.toggleValueDisplay(idx)}
             onSelect={this.onSelectActorType(idx)}
           />
         ))}
@@ -134,7 +132,7 @@ type PanelProps = {
   currentType: ActorType,
   games: number,
   hasValues: boolean,
-  // onValues: Function,
+  onValues: Function,
   onReset: Function,
   onSelect: Function,
 }
@@ -147,7 +145,7 @@ const ActorPanel = ({
   games,
   onReset,
   onSelect,
-  // onValues,
+  onValues,
   hasValues,
 }: PanelProps) => (
   <div className="control">
@@ -160,7 +158,7 @@ const ActorPanel = ({
       ))}
     </select>
     {hasValues && (
-      <div className="button" onClick={() => {}} disabled={isTraining}>
+      <div className="button" onClick={onValues} disabled={isTraining}>
         values
       </div>
     )}

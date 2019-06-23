@@ -52,6 +52,7 @@ export interface Actor {
 export interface GameBoard {
   grid: Grid;
   actors: Array<Actor>;
+  valuesDisplay: number | null;
   runGame: () => void;
   runGameTimestep: () => void;
   newGame: () => void;
@@ -60,4 +61,5 @@ export interface GameBoard {
   trainActors: (onProgress: (number) => void, onDone: () => void) => void;
   selectActor: (actorIdx: number, newType: ActorType) => boolean;
   resetActor: (actorIdx: number) => void;
+  toggleValueDisplay: (actorIdx: number) => void;
 }

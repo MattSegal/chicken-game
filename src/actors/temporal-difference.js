@@ -13,8 +13,8 @@ import type {
   ActorType as ActorTypeType, // I regret nothing
 } from '../types'
 
-const ALPHA = 0.9
-const GAMMA = 0.9
+const ALPHA = 0.99
+const GAMMA = 0.99
 
 type State = {
   value: number,
@@ -28,8 +28,7 @@ export default class TemporalDifferenceActor extends Actor {
   constructor(sprite: Sprite, type: ActorTypeType) {
     super(sprite, type)
     this.isFleeing = sprite === SPRITES.CHICKEN
-    // Use optimistic value function initialization
-    const initFunction = () => ({ value: 10 + 0.1 * Math.random() })
+    const initFunction = () => ({ value: 0.1 * Math.random() })
     this.states = new StateSpace(initFunction)
   }
 
@@ -133,15 +132,14 @@ export default class TemporalDifferenceActor extends Actor {
     if (this.isFleeing) {
       // Encourage a fleer to keep away
       if (distance == 1) {
-        return -1000
+        return -10
       } else {
-        // Use reward shaping to speed up learning
-        return distance
+        return 0
       }
     } else {
       // Encourage a follower to close the distance
       if (distance == 1) {
-        return 1000
+        return 10
       } else {
         return 0
       }

@@ -35,9 +35,17 @@ export const drawLoop = (board: GameBoard) => {
 }
 
 const drawGridSquares = (board: GameBoard) => {
+  // Draw the value function values if available.
+  let valueGrid = null
+  if (board.valuesDisplay !== null) {
+    const actor = board.actors[board.valuesDisplay]
+    const opponentIdx = 1 - board.valuesDisplay
+    const opponent = board.actors[opponentIdx]
+    valueGrid = actor.getValues(opponent.position)
+    if (valueGrid) drawValueGrid(valueGrid)
+  }
+  // Draw the sprites
   const grid = board.grid
-  const valueGrid = null //board.getValueGrid()
-  if (valueGrid) drawValueGrid(valueGrid)
   for (let i = 0; i < grid.length; i++) {
     for (let j = 0; j < grid[i].length; j++) {
       if (grid[i][j] === SPRITES.FOX) {

@@ -20,6 +20,7 @@ export class GameBoard implements GameBoardType {
   gameIterations: number
   timerId: IntervalID
   worker: any // Web worker instance
+  valuesDisplay: null | number = null
 
   // Create a new gameboard with a grid and some actors
   constructor(grid: Grid, actors: Array<Actor>, worker?: any) {
@@ -131,6 +132,16 @@ export class GameBoard implements GameBoardType {
     const newActor = buildActor(currentActor.type)
     newActor.position = currentActor.position
     this.actors[actorIdx] = newActor
+  }
+
+  toggleValueDisplay = actorIdx => {
+    if (this.valuesDisplay) {
+      this.valuesDisplay = null
+    }
+    const actor = this.actors[actorIdx]
+    if (actor.hasValues && actorIdx !== this.valuesDisplay) {
+      this.valuesDisplay = actorIdx
+    }
   }
 
   _move = (actor: Actor, action: Action) => {
