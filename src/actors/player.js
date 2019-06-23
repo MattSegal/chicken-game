@@ -6,18 +6,19 @@ import type {
   Vector,
   ActorMessage,
   Actor as ActorType,
+  Grid,
   ActorType as ActorTypeType, // I regret nothing
 } from '../types'
 
-const MOVES = {
-  ArrowDown: 'SOUTH',
-  ArrowUp: 'NORTH',
-  ArrowLeft: 'WEST',
-  ArrowRight: 'EAST',
-  s: 'SOUTH',
-  w: 'NORTH',
-  a: 'WEST',
-  d: 'EAST',
+const MOVES: { [string]: Action } = {
+  ArrowDown: 'S',
+  ArrowUp: 'N',
+  ArrowLeft: 'W',
+  ArrowRight: 'E',
+  s: 'S',
+  w: 'N',
+  a: 'W',
+  d: 'E',
 }
 
 // Allows player to control the actor
@@ -34,14 +35,10 @@ export default class PlayerActor extends Actor {
     this.chosenNextAction = MOVES[e.key] || null
   }
 
-  timestep(
-    getActions: (number, number) => Array<Action>,
-    resetGame: () => void,
-    position: Vector,
-    targetPosition: Vector
-  ): Action {
+  onTimestep(grid: Grid, targetPosition: Vector): Action {
+    const actions = this.getAvailableActions(grid, this.position)
     let nextAction = null
-    if (getActions(position[0], position[1]).includes(this.chosenNextAction)) {
+    if (actions.includes(this.chosenNextAction)) {
       nextAction = this.chosenNextAction
       this.chosenNextAction = null
     }

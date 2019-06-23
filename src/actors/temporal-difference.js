@@ -8,6 +8,7 @@ import type {
   Action,
   Vector,
   ActorMessage,
+  Grid,
   Actor as ActorType,
   ActorType as ActorTypeType, // I regret nothing
 } from '../types'
@@ -22,29 +23,78 @@ type State = {
 export default class TemporalDifferenceActor extends Actor {
   isFleeing: boolean
   states: StateSpace<State>
+  hasValues = true
+
   constructor(sprite: Sprite, type: ActorTypeType) {
     super(sprite, type)
     this.isFleeing = sprite === SPRITES.CHICKEN
-    this.states = new StateSpace(() => ({ value: 0.1 * Math.random() }))
+    // Use optimistic value function initialization
+    const initFunction = () => ({ value: 10 + 0.1 * Math.random() })
+    this.states = new StateSpace(initFunction)
+  }
+
+  onTimestep(grid: Grid, targetPosition: Vector): Action {
+    const actions = this.getAvailableActions(grid, this.position)
+    actions.push(null) // Give the actor the option of not moving
+
+    // We're using e-greedy policy improvement strategy
+    // There is an epsilon chance of randomly picking our next move
+    const epsilon = 1 / Math.sqrt(this.gamesPlayed)
+    let chosenAction
+    if (Math.random() < epsilon) {
+      chosenAction = this.chooseActionRandomly(actions)
+    } else {
+      chosenAction = this.chooseActionGreedily(
+        actions,
+        this.position,
+        targetPosition
+      )
+    }
+    const newPosition = Actor.getNewPosition(chosenAction, this.position)
+
+    // Using the expected value of our next move, update the value function
+    // with the temporal difference algorithm
+    const distance = Actor.getManhattanDistance(this.position, targetPosition)
+    const reward = this.getReward(distance)
+    const currentValue = this.states.getStateFromPositions(
+      this.position,
+      targetPosition
+    ).value
+    const expectedValue = this.states.getStateFromPositions(
+      newPosition,
+      targetPosition
+    ).value
+    const targetValue = reward + GAMMA * expectedValue
+    const error = targetValue - currentValue
+    const newValue = currentValue + ALPHA * error
+    const currentState = this.states.getStateFromPositions(
+      this.position,
+      targetPosition
+    )
+    currentState.value = newValue
+    return chosenAction
   }
 
   // Transform data for transfer to web worker
   serialize(): ActorMessage {
     return {
-      games: this.games,
       type: this.type,
-      states: this.states._states,
+      data: {
+        gamesPlayed: this.gamesPlayed,
+        stateSpace: this.states._states,
+      },
     }
   }
-  deserialize(data: any) {
-    this.games = data.games
-    this.states._states = data.states
+
+  deserialize(message: ActorMessage) {
+    this.gamesPlayed = message.data.gamesPlayed
+    const { stateSpace } = message.data
+    if (stateSpace) {
+      this.states._states = stateSpace
+    }
+    return this
   }
-  reset = () => {
-    // Reset any global actor state
-    this.games = 0
-    this.states = new StateSpace(() => ({ value: 0.1 * Math.random() }))
-  }
+
   getValues(targetPosition: Vector) {
     const arr = []
     const ranking = []
@@ -85,7 +135,8 @@ export default class TemporalDifferenceActor extends Actor {
       if (distance == 1) {
         return -1000
       } else {
-        return 0
+        // Use reward shaping to speed up learning
+        return distance
       }
     } else {
       // Encourage a follower to close the distance
@@ -95,55 +146,6 @@ export default class TemporalDifferenceActor extends Actor {
         return 0
       }
     }
-  }
-
-  timestep(
-    getActions: (number, number) => Array<Action>,
-    resetGame: () => void,
-    position: Vector,
-    targetPosition: Vector
-  ): Action {
-    // Evaluate all possible actions
-    const actions = getActions(position[0], position[1])
-    actions.push(null) // Give the actor the option of not moving
-
-    // We're using e-greedy policy improvement strategy
-    // There is an epsilon chance of randomly picking our next move
-    const epsilon = 1 / Math.sqrt(this.games)
-    let chosenAction
-    if (Math.random() < epsilon) {
-      chosenAction = this.chooseActionRandomly(actions)
-    } else {
-      chosenAction = this.chooseActionGreedily(
-        actions,
-        position,
-        targetPosition
-      )
-    }
-    const newPosition = Actor.getNewPosition(chosenAction, position)
-
-    // Using the expected value of our next move, update the value function
-    // with the temporal difference algorithm
-    const distance = Actor.getManhattanDistance(position, targetPosition)
-    const reward = this.getReward(distance)
-    const currentValue = this.states.getStateFromPositions(
-      position,
-      targetPosition
-    ).value
-    const expectedValue = this.states.getStateFromPositions(
-      newPosition,
-      targetPosition
-    ).value
-    const targetValue = reward + GAMMA * expectedValue
-    const error = targetValue - currentValue
-    const newValue = currentValue + ALPHA * error
-    const currentState = this.states.getStateFromPositions(
-      position,
-      targetPosition
-    )
-    currentState.value = newValue
-
-    return chosenAction
   }
 
   chooseActionRandomly(actions: Array<Action>) {

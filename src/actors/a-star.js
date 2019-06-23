@@ -6,6 +6,7 @@ import type {
   Sprite,
   Action,
   Vector,
+  Grid,
   ActorMessage,
   Actor as ActorType,
   ActorType as ActorTypeType, // I regret nothing
@@ -31,22 +32,17 @@ export default class AStarActor extends Actor {
     }
   }
 
-  timestep(
-    getActions: (number, number) => Array<Action>,
-    resetGame: () => void,
-    position: Vector,
-    targetPosition: Vector
-  ): Action {
+  onTimestep(grid: Grid, targetPosition: Vector): Action {
     // Find shortest path with A* algorithm
     let iterations = 0
     let possible = new Set<number>()
     let seen = new Set<number>()
 
-    let current: number = getKey(position)
+    let current = getKey(this.position)
     const target = getKey(targetPosition)
     this.squares[current].steps = 0
     this.squares[current].score = Actor.getManhattanDistance(
-      position,
+      this.position,
       targetPosition
     )
 
@@ -58,7 +54,7 @@ export default class AStarActor extends Actor {
       // Find the new squares reachable from current square
       // and then add them to the set of possible squares
       const currentPos = positionfromKey(current)
-      const actions = getActions(currentPos[0], currentPos[1])
+      const actions = this.getAvailableActions(grid, currentPos)
       for (let action of shuffle<Action>(actions)) {
         const actionPos = Actor.getNewPosition(action, currentPos)
         const actionKey = getKey(actionPos)
@@ -73,7 +69,6 @@ export default class AStarActor extends Actor {
       // Ensure that there are possible moves remaining
       if (possible.size < 1) {
         LOGGING && console.warn('Cannot reach target: ', targetPosition)
-        resetGame()
         return null
       }
 
@@ -96,7 +91,6 @@ export default class AStarActor extends Actor {
             'Too many iterations trying to reach square: ',
             targetPosition
           )
-        resetGame()
         return null
       }
     }
@@ -119,7 +113,10 @@ export default class AStarActor extends Actor {
       current = best
     }
     if (current) {
-      return Actor.getActionFromPositions(position, positionfromKey(current))
+      return Actor.getActionFromPositions(
+        this.position,
+        positionfromKey(current)
+      )
     }
     return null
   }

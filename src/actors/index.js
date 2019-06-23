@@ -25,11 +25,6 @@ export const FOX_ALGOS: { [ActorType]: string } = {
   FOX_A_STAR: 'a* search',
 }
 
-export const LEARNING_ALGOS: Array<ActorType> = [
-  'CHICKEN_TEMPORAL_DIFFERENCE',
-  'FOX_TEMPORAL_DIFFERENCE',
-]
-
 export const buildActor = (type: ActorType): Actor => {
   switch (type) {
     // case 'CHICKEN_MONTE_CARLO':

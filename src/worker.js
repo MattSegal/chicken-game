@@ -1,31 +1,30 @@
 import { TIME } from './constants'
 import { buildActor } from './actors'
-import { GameBoard } from './board/gameboard'
+import { GameBoard } from './board'
 
 let isTraining = false
+
+const MESSAGE_PERIOD = TIME.TRAINING_STEPS / 100
 
 onmessage = e => {
   if (isTraining) return
   isTraining = true
   const { actorMessages, grid } = e.data
-  const actors = [
-    buildActor(actorMessages[0].type),
-    buildActor(actorMessages[1].type),
-  ]
-  const board = new GameBoard(grid)
+  const actors = actorMessages.map(am => buildActor(am.type).deserialize(am))
+  const board = new GameBoard(grid, actors)
   for (let i = 0; i < TIME.TRAINING_STEPS; i++) {
-    board.run(board.reset)
-    if (i % 1000 === 0) {
+    board.runGameTimestep()
+    if (i % MESSAGE_PERIOD === 0) {
       postMessage({
-        done: false,
-        progress: Math.floor((100 * i) / TIME.TRAINING_STEPS),
+        isTrainingDone: false,
+        trainingProgress: Math.floor((100 * i) / TIME.TRAINING_STEPS),
       })
     }
   }
   postMessage({
-    done: true,
-    progress: 100,
-    actorMessages: [actors[0].serialize(), actors[1].serialize()],
+    isTrainingDone: true,
+    trainingProgress: 100,
+    actorMessages: actors.map(a => a.serialize()),
   })
   isTraining = false
 }

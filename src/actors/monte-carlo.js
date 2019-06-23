@@ -15,6 +15,7 @@ type State = {
   visits: number,
 }
 
+// NOT WORKING
 export default class MonteCarloActor extends Actor {
   isFleeing: boolean
   episodeReward: number
@@ -59,7 +60,7 @@ export default class MonteCarloActor extends Actor {
         visits: 0,
       }))
   }
-  getValues(targetPosition: Vector) {
+  getValueGrid(targetPosition: Vector) {
     const arr: Array<Array<number>> = Array(BOARD.BOARD_LENGTH)
       .fill(0)
       .map(c => Array(BOARD.BOARD_LENGTH).fill(0))

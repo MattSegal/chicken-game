@@ -5,6 +5,7 @@ import { randomChoice } from '../utils'
 import type {
   Sprite,
   Action,
+  Grid,
   Vector,
   ActorType as ActorTypeType, // I regret nothing
 } from '../types'
@@ -23,23 +24,16 @@ export default class GreedyActor extends Actor {
     this.isFollowing = sprite === SPRITES.FOX
   }
 
-  timestep(
-    getActions: (number, number) => Array<Action>,
-    resetGame: () => void,
-    position: Vector,
-    targetPosition: Vector
-  ): Action {
-    const row = position[0]
-    const col = position[1]
-    const targetRow = targetPosition[0]
-    const targetCol = targetPosition[1]
+  onTimestep(grid: Grid, targetPosition: Vector): Action {
+    const actions = this.getAvailableActions(grid, this.position)
+
+    const [row, col] = this.position
+    const [targetRow, targetCol] = targetPosition
 
     const goUp = this.isFollowing ? row > targetRow : row <= targetRow
     const goDown = this.isFollowing ? row < targetRow : row >= targetRow
     const goRight = this.isFollowing ? col < targetCol : col >= targetCol
     const goLeft = this.isFollowing ? col > targetCol : col <= targetCol
-
-    const actions = getActions(row, col)
 
     const chosenActions = []
 

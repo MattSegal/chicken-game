@@ -19,44 +19,45 @@ export type ActorType =
 
 export type ActorMessage = {
   type: ActorType,
-  games: number,
-  states?: any,
+  data: {
+    gamesPlayed: number,
+    stateSpace?: any,
+  },
 }
 
 export type WorkerMessage = {
-  actorMessages: [ActorMessage, ActorMessage],
+  actorMessages: Array<ActorMessage>,
   grid: Grid,
 }
 
 export type OnlineMessage = {
-  actorMessages?: [ActorMessage, ActorMessage],
-  progress: number,
-  done: boolean,
+  actorMessages?: Array<ActorMessage>,
+  trainingProgress: number,
+  isTrainingDone: boolean,
 }
 
 export interface Actor {
   type: ActorType;
   sprite: Sprite;
   position: Vector;
-  games: number;
-  timestep(
-    getActions: (number, number) => Array<Action>,
-    resetGame: () => void,
-    position: Vector,
-    targetPosition: Vector
-  ): Action;
+  gamesPlayed: number;
+  hasValues: boolean;
+  onTimestep(grid: Grid, target: Vector): Action;
+  onGameEnd(): void;
   serialize(): ActorMessage;
-  deserialize(ActorMessage): void;
-  reset(): void;
-  end(): void;
-  getValues(Vector): Array<Array<number>> | null;
+  deserialize(ActorMessage): Actor;
+  getValues(target: Vector): Array<Array<number>> | null;
 }
 
 export interface GameBoard {
   grid: Grid;
-  actors: [Actor, Actor];
-  getValues(): Array<Array<number>> | null;
-  run: () => void;
-  reset(): void;
-  train(onProgress: Function, onDone: Function): void;
+  actors: Array<Actor>;
+  runGame: () => void;
+  runGameTimestep: () => void;
+  newGame: () => void;
+  getCanTrain: () => boolean;
+  getGamesPlayed: () => Array<number>;
+  trainActors: (onProgress: (number) => void, onDone: () => void) => void;
+  selectActor: (actorIdx: number, newType: ActorType) => boolean;
+  resetActor: (actorIdx: number) => void;
 }

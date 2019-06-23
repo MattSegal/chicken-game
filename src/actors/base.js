@@ -1,10 +1,11 @@
 // @flow
-import { VECTORS, ACTIONS } from '../constants'
+import { BOARD, VECTORS, ACTIONS, SPRITES } from '../constants'
 import type {
   Sprite,
   Action,
   Vector,
   ActorMessage,
+  Grid,
   Actor as ActorType,
   ActorType as ActorTypeType, // I regret nothing
 } from '../types'
@@ -13,44 +14,41 @@ import type {
 export class Actor implements ActorType {
   type: ActorTypeType
   sprite: Sprite
-  games: number
   position: Vector
+  gamesPlayed: number
+  hasValues = false
+
   constructor(sprite: Sprite, type: ActorTypeType) {
     this.type = type
     this.sprite = sprite
-    this.games = 0
+    this.gamesPlayed = 0
     this.position = [0, 0]
   }
 
-  timestep(
-    getActions: (number, number) => Array<Action>,
-    resetGame: () => void,
-    position: Vector,
-    targetPosition: Vector
-  ): Action {
-    // Perform all actions for this timestep
+  // Return chosen action for this timestep
+  onTimestep(grid: Grid, targetPosition: Vector): Action {
     // To be implemented by child class
     return null
+  }
+
+  // Do whatever you need to at the end of a game
+  onGameEnd() {
+    this.gamesPlayed++
   }
 
   // Transform data for transfer to web worker
   serialize(): ActorMessage {
     return {
-      games: this.games,
       type: this.type,
+      data: {
+        gamesPlayed: this.gamesPlayed,
+      },
     }
   }
-  deserialize(msg: ActorMessage) {
-    this.games = msg.games
-  }
-  reset = () => {
-    // Reset any global actor state
-    this.games = 0
-  }
 
-  end() {
-    // Do whatever you need to at the end of a game
-    this.games++
+  deserialize(msg: ActorMessage) {
+    this.gamesPlayed = msg.data.gamesPlayed
+    return this
   }
 
   getValues(targetPosition: Vector) {
@@ -59,18 +57,29 @@ export class Actor implements ActorType {
     return null
   }
 
+  // Get possible actions from the provided gris
+  getAvailableActions = (grid: Grid, position: Vector) => {
+    const [row, col] = position
+    const actions = []
+    const max = BOARD.BOARD_LENGTH - 1
+    const isNoTree = (r, c) => grid[r][c] !== SPRITES.TREE
+    if (row > 0 && isNoTree(row - 1, col)) actions.push(ACTIONS.NORTH)
+    if (row < max && isNoTree(row + 1, col)) actions.push(ACTIONS.SOUTH)
+    if (col > 0 && isNoTree(row, col - 1)) actions.push(ACTIONS.WEST)
+    if (col < max && isNoTree(row, col + 1)) actions.push(ACTIONS.EAST)
+    return actions
+  }
+
   // Get the 'Manhatten distance' between 2 actors
   static getManhattanDistance(posA: Vector, posB: Vector) {
     return Math.abs(posA[0] - posB[0]) + Math.abs(posA[1] - posB[1])
   }
 
   // Get new position given a current position and an action
-  static getNewPosition(action: Action, oldPosition: Vector) {
+  static getNewPosition(action: Action, oldPosition: Vector): Vector {
     if (!action) return oldPosition
-    return [
-      oldPosition[0] + VECTORS[action][0],
-      oldPosition[1] + VECTORS[action][1],
-    ]
+    const vector = VECTORS[action]
+    return [oldPosition[0] + vector[0], oldPosition[1] + vector[1]]
   }
 
   // Get action given current position and new position

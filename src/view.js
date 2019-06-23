@@ -36,8 +36,8 @@ export const drawLoop = (board: GameBoard) => {
 
 const drawGridSquares = (board: GameBoard) => {
   const grid = board.grid
-  const actorValues = board.getValues()
-  if (actorValues) drawValues(actorValues)
+  const valueGrid = null //board.getValueGrid()
+  if (valueGrid) drawValueGrid(valueGrid)
   for (let i = 0; i < grid.length; i++) {
     for (let j = 0; j < grid[i].length; j++) {
       if (grid[i][j] === SPRITES.FOX) {
@@ -46,14 +46,14 @@ const drawGridSquares = (board: GameBoard) => {
         drawSprite(CHICKEN_IMAGE, i, j)
       } else if (grid[i][j] === SPRITES.TREE) {
         drawSprite(TREE_IMAGE, i, j)
-      } else if (!actorValues) {
+      } else if (!valueGrid) {
         clearSquare(i, j)
       }
     }
   }
 }
 
-const drawValues = (values: Array<Array<number>>) => {
+const drawValueGrid = (values: Array<Array<number>>) => {
   for (let i = 0; i < values.length; i++) {
     for (let j = 0; j < values[i].length; j++) {
       drawValue(i, j, values[i][j])

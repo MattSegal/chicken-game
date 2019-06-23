@@ -9,8 +9,8 @@ export const BOARD = {
 }
 
 export const TIME = {
-  TICK: 180, // ms
-  TRAINING_STEPS: 1000 * 1000, // 10e6 steps
+  TICK: 220, // ms
+  TRAINING_STEPS: 2 * 1000 * 1000, // 2e6 steps
   MAX_EPISODE_LENGTH: 500, // steps
 }
 
@@ -21,6 +21,8 @@ export const ACTIONS: { [string]: Action } = {
   WEST: 'W',
 }
 
+// Negative is up, positive is down.
+// Negative is west, positive is east.
 export const VECTORS: { [Action]: Vector } = {
   N: [-1, 0],
   S: [1, 0],
