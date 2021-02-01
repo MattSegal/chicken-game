@@ -1,19 +1,40 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Chicken Game</title>
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="256x256"
-      href="./static/chicken.png"
-    />
-    <link rel="stylesheet" type="text/css" href="./static/style.css" />
-    <meta charset="utf-8" />
-  </head>
-  <body>
-    <div id="controls"></div>
-    <canvas id="gameboard"></canvas>
-    <script type="text/javascript" src="./static/main.js"></script>
-  </body>
+
+<head>
+  <title>Chicken Game</title>
+  <link rel="icon" type="image/png" sizes="256x256" href="./static/chicken.png" />
+  <link rel="stylesheet" type="text/css" href="./static/style.css" />
+  <meta charset="utf-8" />
+</head>
+
+<body>
+  <div id="controls"></div>
+  <canvas id="gameboard"></canvas>
+  <script type="text/javascript" src="./static/main.js"></script>
+  <!--- Tooltip player -->
+  <script type='text/javascript'>
+    window.Tooltip || function (t, e) {
+      var o = {
+        url: "https://cdn.tooltip.io/static/player.js",
+        key: "5d15bcbe-100e-4715-8c92-60f37dc76c51",
+        async: true
+      };
+
+      window.Tooltip = { cs: [], _apiKey: o.key }; for (
+        var r = ["identify", "goal", "updateUserData", "start", "stop", "refresh", "show", "hide", "on"],
+        i = {}, n = 0; n < r.length; n++) {
+          var a = r[n]; i[a] = function (t) {
+            return function () {
+              var e = Array.prototype.slice.call(arguments);
+              window.Tooltip.cs.push({ method: t, args: e })
+            }
+          }(a)
+      } window.Tooltip.API = i; var n = t.createElement(e), s = t.getElementsByTagName(e)[0];
+      n.type = "text/javascript", n.async = o.async, s.parentNode.insertBefore(n, s), n.src = o.url
+    }(document, "script");
+  </script>
+  <!--- Tooltip player -->
+</body>
+
 </html>
